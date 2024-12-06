@@ -10,6 +10,7 @@ import Index from "./pages/Index";
 import Tournaments from "./pages/Tournaments";
 import Matchmaking from "./pages/Matchmaking";
 import Profile from "./pages/Profile";
+import Auth from "./pages/Auth";
 import { supabase } from "@/integrations/supabase/client";
 
 const queryClient = new QueryClient();
