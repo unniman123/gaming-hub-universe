@@ -1,36 +1,24 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { Link, useLocation } from 'react-router-dom';
-import { Trophy, Users, User } from "lucide-react";
-import { RegisterForm } from './auth/RegisterForm';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Trophy, Users, User, LogOut } from "lucide-react";
+import { useSessionContext } from '@supabase/auth-helpers-react';
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const Navbar = () => {
   const location = useLocation();
-  const [isLoading, setIsLoading] = useState(false);
-  const [loginData, setLoginData] = useState({
-    email: "",
-    password: "",
-  });
+  const navigate = useNavigate();
+  const { session } = useSessionContext();
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    // TODO: Implement actual login logic
-    await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
-    toast.success("Login successful!");
-    setIsLoading(false);
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      toast.success("Logged out successfully");
+      navigate('/login');
+    } catch (error) {
+      toast.error("Error logging out");
+    }
   };
   
   return (
@@ -63,64 +51,30 @@ const Navbar = () => {
             </div>
           </div>
           <div className="flex items-center space-x-4">
-            <Link to="/profile">
-              <Button variant="ghost" className="text-gray-300 hover:text-gaming-accent">
-                <User size={18} className="mr-2" />
-                Profile
-              </Button>
-            </Link>
-            
-            {/* Login Dialog */}
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button variant="outline" className="border-gaming-accent/20 text-gaming-accent hover:text-gaming-accent/90">
+            {session ? (
+              <>
+                <Link to="/profile">
+                  <Button variant="ghost" className="text-gray-300 hover:text-gaming-accent">
+                    <User size={18} className="mr-2" />
+                    Profile
+                  </Button>
+                </Link>
+                <Button 
+                  variant="ghost" 
+                  onClick={handleLogout}
+                  className="text-gray-300 hover:text-gaming-accent"
+                >
+                  <LogOut size={18} className="mr-2" />
+                  Logout
+                </Button>
+              </>
+            ) : (
+              <Link to="/login">
+                <Button className="bg-gaming-accent hover:bg-gaming-accent/90 text-gaming-dark">
                   Login
                 </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px] bg-gaming-dark border-gaming-accent/20">
-                <DialogHeader>
-                  <DialogTitle className="text-2xl text-white">Login</DialogTitle>
-                  <DialogDescription className="text-gray-400">
-                    Enter your credentials to access your account
-                  </DialogDescription>
-                </DialogHeader>
-                <form onSubmit={handleLogin} className="space-y-4 mt-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="email" className="text-white">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="Enter your email"
-                      value={loginData.email}
-                      onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
-                      required
-                      className="bg-gaming-dark/50 border-gaming-accent/20 text-white"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="password" className="text-white">Password</Label>
-                    <Input
-                      id="password"
-                      type="password"
-                      placeholder="Enter your password"
-                      value={loginData.password}
-                      onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
-                      required
-                      className="bg-gaming-dark/50 border-gaming-accent/20 text-white"
-                    />
-                  </div>
-                  <Button 
-                    type="submit" 
-                    className="w-full bg-gaming-accent hover:bg-gaming-accent/90 text-gaming-dark"
-                    disabled={isLoading}
-                  >
-                    {isLoading ? "Logging in..." : "Login"}
-                  </Button>
-                </form>
-              </DialogContent>
-            </Dialog>
-            
-            <RegisterForm />
+              </Link>
+            )}
           </div>
         </div>
       </div>
