@@ -12,39 +12,42 @@ export type Database = {
       matches: {
         Row: {
           created_at: string
+          game_mode: string | null
           id: string
           match_date: string
           player1_id: string
           player2_id: string
           score_player1: number | null
           score_player2: number | null
-          status: string | null
+          status: Database["public"]["Enums"]["match_status"] | null
           tournament_id: string | null
           updated_at: string
           winner_id: string | null
         }
         Insert: {
           created_at?: string
+          game_mode?: string | null
           id?: string
           match_date: string
           player1_id: string
           player2_id: string
           score_player1?: number | null
           score_player2?: number | null
-          status?: string | null
+          status?: Database["public"]["Enums"]["match_status"] | null
           tournament_id?: string | null
           updated_at?: string
           winner_id?: string | null
         }
         Update: {
           created_at?: string
+          game_mode?: string | null
           id?: string
           match_date?: string
           player1_id?: string
           player2_id?: string
           score_player1?: number | null
           score_player2?: number | null
-          status?: string | null
+          status?: Database["public"]["Enums"]["match_status"] | null
           tournament_id?: string | null
           updated_at?: string
           winner_id?: string | null
@@ -86,6 +89,8 @@ export type Database = {
           created_at: string
           gaming_experience: string | null
           id: string
+          is_in_matchmaking: boolean | null
+          skill_rating: number | null
           updated_at: string
           username: string
         }
@@ -94,6 +99,8 @@ export type Database = {
           created_at?: string
           gaming_experience?: string | null
           id: string
+          is_in_matchmaking?: boolean | null
+          skill_rating?: number | null
           updated_at?: string
           username: string
         }
@@ -102,6 +109,8 @@ export type Database = {
           created_at?: string
           gaming_experience?: string | null
           id?: string
+          is_in_matchmaking?: boolean | null
+          skill_rating?: number | null
           updated_at?: string
           username?: string
         }
@@ -204,10 +213,22 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      create_match: {
+        Args: {
+          player1_id: string
+          player2_id: string
+        }
+        Returns: string
+      }
+      find_match: {
+        Args: {
+          player_id: string
+        }
+        Returns: string
+      }
     }
     Enums: {
-      [_ in never]: never
+      match_status: "pending" | "in_progress" | "completed" | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
