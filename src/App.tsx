@@ -3,7 +3,6 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { createClient } from '@supabase/supabase-js';
 import { SessionContextProvider } from '@supabase/auth-helpers-react';
 import { useState, useEffect } from 'react';
 import Index from "./pages/Index";
@@ -11,6 +10,8 @@ import Tournaments from "./pages/Tournaments";
 import Matchmaking from "./pages/Matchmaking";
 import Profile from "./pages/Profile";
 import Auth from "./pages/Auth";
+import TournamentManagement from "./pages/admin/TournamentManagement";
+import UserManagement from "./pages/admin/UserManagement";
 import { supabase } from "@/integrations/supabase/client";
 
 const queryClient = new QueryClient();
@@ -68,6 +69,18 @@ const App = () => {
                 path="/profile" 
                 element={
                   session ? <Profile /> : <Navigate to="/login" replace />
+                } 
+              />
+              <Route 
+                path="/admin/tournaments" 
+                element={
+                  session ? <TournamentManagement /> : <Navigate to="/login" replace />
+                } 
+              />
+              <Route 
+                path="/admin/users" 
+                element={
+                  session ? <UserManagement /> : <Navigate to="/login" replace />
                 } 
               />
               <Route path="/login" element={<Auth />} />
