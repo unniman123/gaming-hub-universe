@@ -5,12 +5,28 @@ import { LayoutDashboard, Trophy, History, ChartBar, Users } from "lucide-react"
 import Navbar from '@/components/Navbar';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import TournamentCard from '@/components/TournamentCard';
+import AdminSection from '@/components/AdminSection';
 import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
   const { session } = useSessionContext();
 
-  // Fetch user's match history
+  // Fetch user profile to check admin status
+  const { data: userProfile } = useQuery({
+    queryKey: ['userProfile', session?.user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', session?.user?.id)
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!session?.user?.id,
+  });
+
   const { data: matches, isLoading: matchesLoading } = useQuery({
     queryKey: ['matches', session?.user?.id],
     queryFn: async () => {
@@ -77,6 +93,9 @@ const Index = () => {
           </h1>
           <p className="text-gray-400 mt-2">Welcome to your gaming hub</p>
         </div>
+
+        {/* Show Admin Section only for admin users */}
+        {userProfile?.is_admin && <AdminSection />}
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">

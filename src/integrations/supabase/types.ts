@@ -89,6 +89,7 @@ export type Database = {
           created_at: string
           gaming_experience: string | null
           id: string
+          is_admin: boolean | null
           is_in_matchmaking: boolean | null
           skill_rating: number | null
           updated_at: string
@@ -99,6 +100,7 @@ export type Database = {
           created_at?: string
           gaming_experience?: string | null
           id: string
+          is_admin?: boolean | null
           is_in_matchmaking?: boolean | null
           skill_rating?: number | null
           updated_at?: string
@@ -109,6 +111,7 @@ export type Database = {
           created_at?: string
           gaming_experience?: string | null
           id?: string
+          is_admin?: boolean | null
           is_in_matchmaking?: boolean | null
           skill_rating?: number | null
           updated_at?: string
