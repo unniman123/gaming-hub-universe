@@ -4,6 +4,7 @@ import { useSessionContext } from '@supabase/auth-helpers-react';
 import { LayoutDashboard, Trophy, History, ChartBar, Users } from "lucide-react";
 import Navbar from '@/components/Navbar';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import TournamentCard from '@/components/TournamentCard';
 import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
@@ -28,6 +29,25 @@ const Index = () => {
       return data;
     },
     enabled: !!session?.user?.id,
+  });
+
+  // Fetch active tournaments with real-time participant count
+  const { data: tournaments, isLoading: tournamentsLoading } = useQuery({
+    queryKey: ['active-tournaments'],
+    queryFn: async () => {
+      const { data: tournamentsData, error: tournamentsError } = await supabase
+        .from('tournaments')
+        .select(`
+          *,
+          tournament_participants(count)
+        `)
+        .eq('status', 'upcoming')
+        .order('start_date', { ascending: true })
+        .limit(3);
+
+      if (tournamentsError) throw tournamentsError;
+      return tournamentsData;
+    },
   });
 
   // Fetch user stats
@@ -103,6 +123,34 @@ const Index = () => {
               </div>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Active Tournaments */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+            <Trophy className="text-gaming-accent" />
+            Active Tournaments
+          </h2>
+          
+          {tournamentsLoading ? (
+            <div className="text-center py-8 text-gray-400">Loading tournaments...</div>
+          ) : tournaments?.length === 0 ? (
+            <div className="text-center py-8 text-gray-400">No active tournaments</div>
+          ) : (
+            <div className="space-y-4">
+              {tournaments?.map((tournament) => (
+                <TournamentCard
+                  key={tournament.id}
+                  title={tournament.title}
+                  game={tournament.game_type}
+                  prizePool={Number(tournament.prize_pool) || 0}
+                  entryFee={0} // Add entry_fee to tournaments table if needed
+                  playersJoined={tournament.tournament_participants[0].count}
+                  maxPlayers={tournament.max_participants}
+                />
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Match History */}
