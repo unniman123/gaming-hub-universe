@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSessionContext } from '@supabase/auth-helpers-react';
@@ -39,6 +39,43 @@ const MatchDetails = () => {
     },
     enabled: !!id,
   });
+
+  // Set up real-time subscription
+  useEffect(() => {
+    if (!id) return;
+
+    const channel = supabase
+      .channel('match_updates')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'matches',
+          filter: `id=eq.${id}`,
+        },
+        (payload) => {
+          console.log('Match update received:', payload);
+          queryClient.invalidateQueries({ queryKey: ['match', id] });
+          
+          // Show toast notification for status changes
+          if (payload.new.status !== payload.old?.status) {
+            toast.info(`Match status updated to: ${payload.new.status}`);
+          }
+          
+          // Show toast notification for score updates
+          if (payload.new.score_player1 !== payload.old?.score_player1 || 
+              payload.new.score_player2 !== payload.old?.score_player2) {
+            toast.info('Match scores have been updated');
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [id, queryClient]);
 
   const updateMatchMutation = useMutation({
     mutationFn: async ({ score1, score2 }: { score1: number; score2: number }) => {
