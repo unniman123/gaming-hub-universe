@@ -1,49 +1,164 @@
 import React from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useSessionContext } from '@supabase/auth-helpers-react';
+import { useToast } from "@/hooks/use-toast";
 import Navbar from '@/components/Navbar';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
-import { Trophy, Users, Calendar } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Trophy, Users, Calendar, Loader2, ArrowRight } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { format } from 'date-fns';
 
 const Tournaments = () => {
+  const { session } = useSessionContext();
+  const { toast } = useToast();
+
+  const { data: tournaments, isLoading: tournamentsLoading } = useQuery({
+    queryKey: ['tournaments'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('tournaments')
+        .select(`
+          *,
+          tournament_participants (
+            player_id,
+            status
+          )
+        `)
+        .order('start_date', { ascending: true });
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: userParticipations } = useQuery({
+    queryKey: ['user-tournament-participations', session?.user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('tournament_participants')
+        .select('*')
+        .eq('player_id', session?.user?.id);
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!session?.user?.id,
+  });
+
+  const joinTournament = async (tournamentId: string) => {
+    const { error } = await supabase
+      .from('tournament_participants')
+      .insert({
+        tournament_id: tournamentId,
+        player_id: session?.user?.id,
+      });
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to join tournament. Please try again.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    toast({
+      title: "Success",
+      description: "You have successfully joined the tournament!",
+    });
+  };
+
+  if (tournamentsLoading) {
+    return (
+      <div className="min-h-screen bg-gaming-dark">
+        <Navbar />
+        <div className="container mx-auto px-4 pt-24 flex justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-gaming-accent" />
+        </div>
+      </div>
+    );
+  }
+
+  const isUserParticipating = (tournamentId: string) => {
+    return userParticipations?.some(p => p.tournament_id === tournamentId);
+  };
+
+  const getParticipantCount = (tournament: any) => {
+    return tournament.tournament_participants?.length || 0;
+  };
+
   return (
     <div className="min-h-screen bg-gaming-dark">
       <Navbar />
       <div className="container mx-auto px-4 pt-24">
-        <h1 className="text-3xl font-bold text-white mb-8">Active Tournaments</h1>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Tournament</TableHead>
-              <TableHead>Game</TableHead>
-              <TableHead>Prize Pool</TableHead>
-              <TableHead>Players</TableHead>
-              <TableHead>Start Date</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            <TableRow>
-              <TableCell className="font-medium text-white">
-                <div className="flex items-center gap-2">
-                  <Trophy className="text-gaming-accent" />
-                  Spring Championship
-                </div>
-              </TableCell>
-              <TableCell className="text-gray-300">Fortnite</TableCell>
-              <TableCell className="text-gaming-accent">$10,000</TableCell>
-              <TableCell className="text-gray-300">
-                <div className="flex items-center gap-2">
-                  <Users size={16} />
-                  32/64
-                </div>
-              </TableCell>
-              <TableCell className="text-gray-300">
-                <div className="flex items-center gap-2">
-                  <Calendar size={16} />
-                  Mar 15, 2024
-                </div>
-              </TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
+        <h1 className="text-3xl font-bold text-white mb-8 flex items-center gap-2">
+          <Trophy className="text-gaming-accent" />
+          Tournaments
+        </h1>
+        <div className="bg-gaming-dark/50 rounded-lg border border-gaming-accent/20">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="text-gray-300">Tournament</TableHead>
+                <TableHead className="text-gray-300">Game</TableHead>
+                <TableHead className="text-gray-300">Prize Pool</TableHead>
+                <TableHead className="text-gray-300">Players</TableHead>
+                <TableHead className="text-gray-300">Start Date</TableHead>
+                <TableHead className="text-gray-300">Action</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {tournaments?.map((tournament) => (
+                <TableRow key={tournament.id}>
+                  <TableCell className="font-medium text-white">
+                    <div className="flex items-center gap-2">
+                      <Trophy className="text-gaming-accent" />
+                      {tournament.title}
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-gray-300">{tournament.game_type}</TableCell>
+                  <TableCell className="text-gaming-accent">
+                    ${tournament.prize_pool}
+                  </TableCell>
+                  <TableCell className="text-gray-300">
+                    <div className="flex items-center gap-2">
+                      <Users size={16} />
+                      {getParticipantCount(tournament)}/{tournament.max_participants}
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-gray-300">
+                    <div className="flex items-center gap-2">
+                      <Calendar size={16} />
+                      {format(new Date(tournament.start_date), 'MMM dd, yyyy')}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    {isUserParticipating(tournament.id) ? (
+                      <Button 
+                        variant="secondary"
+                        className="w-full"
+                        onClick={() => window.location.href = `/tournaments/${tournament.id}`}
+                      >
+                        View Details
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    ) : (
+                      <Button 
+                        variant="default"
+                        className="w-full"
+                        onClick={() => joinTournament(tournament.id)}
+                        disabled={getParticipantCount(tournament) >= tournament.max_participants}
+                      >
+                        Join Tournament
+                      </Button>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       </div>
     </div>
   );

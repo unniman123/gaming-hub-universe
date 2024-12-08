@@ -7,6 +7,7 @@ import { SessionContextProvider } from '@supabase/auth-helpers-react';
 import { useState, useEffect } from 'react';
 import Index from "./pages/Index";
 import Tournaments from "./pages/Tournaments";
+import TournamentDetails from "./pages/TournamentDetails";
 import Matchmaking from "./pages/Matchmaking";
 import Profile from "./pages/Profile";
 import Auth from "./pages/Auth";
@@ -57,6 +58,12 @@ const App = () => {
                 path="/tournaments" 
                 element={
                   session ? <Tournaments /> : <Navigate to="/login" replace />
+                } 
+              />
+              <Route 
+                path="/tournaments/:id" 
+                element={
+                  session ? <TournamentDetails /> : <Navigate to="/login" replace />
                 } 
               />
               <Route 
