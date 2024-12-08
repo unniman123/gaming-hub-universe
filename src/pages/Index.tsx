@@ -1,11 +1,12 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSessionContext } from '@supabase/auth-helpers-react';
-import { LayoutDashboard, Trophy, History, ChartBar, Users } from "lucide-react";
+import { LayoutDashboard } from "lucide-react";
 import Navbar from '@/components/Navbar';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import TournamentCard from '@/components/TournamentCard';
 import AdminSection from '@/components/AdminSection';
+import StatsGrid from '@/components/dashboard/StatsGrid';
+import ActiveTournaments from '@/components/dashboard/ActiveTournaments';
+import MatchHistory from '@/components/dashboard/MatchHistory';
 import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
@@ -47,7 +48,6 @@ const Index = () => {
     enabled: !!session?.user?.id,
   });
 
-  // Fetch active tournaments with real-time participant count
   const { data: tournaments, isLoading: tournamentsLoading } = useQuery({
     queryKey: ['active-tournaments'],
     queryFn: async () => {
@@ -66,7 +66,6 @@ const Index = () => {
     },
   });
 
-  // Fetch user stats
   const { data: userStats, isLoading: statsLoading } = useQuery({
     queryKey: ['userStats', session?.user?.id],
     queryFn: async () => {
@@ -94,127 +93,24 @@ const Index = () => {
           <p className="text-gray-400 mt-2">Welcome to your gaming hub</p>
         </div>
 
-        {/* Show Admin Section only for admin users */}
         {userProfile?.is_admin && <AdminSection />}
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <Card className="bg-gaming-dark/50 border-gaming-accent/20">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Skill Rating</CardTitle>
-              <ChartBar className="h-4 w-4 text-gaming-accent" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {statsLoading ? "Loading..." : userStats?.skill_rating || 1000}
-              </div>
-            </CardContent>
-          </Card>
+        <StatsGrid 
+          userStats={userStats}
+          statsLoading={statsLoading}
+          matchesCount={matches?.length || 0}
+          matchesLoading={matchesLoading}
+        />
 
-          <Card className="bg-gaming-dark/50 border-gaming-accent/20">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active Players</CardTitle>
-              <Users className="h-4 w-4 text-gaming-accent" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">245</div>
-            </CardContent>
-          </Card>
+        <ActiveTournaments 
+          tournaments={tournaments}
+          isLoading={tournamentsLoading}
+        />
 
-          <Card className="bg-gaming-dark/50 border-gaming-accent/20">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active Tournaments</CardTitle>
-              <Trophy className="h-4 w-4 text-gaming-accent" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">3</div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gaming-dark/50 border-gaming-accent/20">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Matches</CardTitle>
-              <History className="h-4 w-4 text-gaming-accent" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {matchesLoading ? "Loading..." : matches?.length || 0}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Active Tournaments */}
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-            <Trophy className="text-gaming-accent" />
-            Active Tournaments
-          </h2>
-          
-          {tournamentsLoading ? (
-            <div className="text-center py-8 text-gray-400">Loading tournaments...</div>
-          ) : tournaments?.length === 0 ? (
-            <div className="text-center py-8 text-gray-400">No active tournaments</div>
-          ) : (
-            <div className="space-y-4">
-              {tournaments?.map((tournament) => (
-                <TournamentCard
-                  key={tournament.id}
-                  title={tournament.title}
-                  game={tournament.game_type}
-                  prizePool={Number(tournament.prize_pool) || 0}
-                  entryFee={0} // Add entry_fee to tournaments table if needed
-                  playersJoined={tournament.tournament_participants[0].count}
-                  maxPlayers={tournament.max_participants}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Match History */}
-        <Card className="bg-gaming-dark/50 border-gaming-accent/20">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <History className="text-gaming-accent" />
-              Recent Matches
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {matchesLoading ? (
-              <div className="text-center py-4">Loading matches...</div>
-            ) : matches?.length === 0 ? (
-              <div className="text-center py-4 text-gray-400">No matches found</div>
-            ) : (
-              <div className="space-y-4">
-                {matches?.map((match) => (
-                  <div
-                    key={match.id}
-                    className="flex items-center justify-between p-4 rounded-lg bg-gaming-dark/30 border border-gaming-accent/10"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="text-sm">
-                        {match.player1.username} vs {match.player2.username}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <div className="text-sm">
-                        {match.score_player1} - {match.score_player2}
-                      </div>
-                      <div className={`text-sm px-2 py-1 rounded ${
-                        match.status === 'completed'
-                          ? 'bg-green-500/20 text-green-400'
-                          : 'bg-yellow-500/20 text-yellow-400'
-                      }`}>
-                        {match.status}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <MatchHistory 
+          matches={matches}
+          isLoading={matchesLoading}
+        />
       </div>
     </div>
   );
