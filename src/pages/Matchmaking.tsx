@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useSession } from '@supabase/auth-helpers-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from "sonner";
-import { Users, Loader, UserRound, X } from "lucide-react";
+import { Users, Loader, UserRound, X, Swords } from "lucide-react";
 import Navbar from '@/components/Navbar';
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 
 const Matchmaking = () => {
@@ -67,6 +68,7 @@ const Matchmaking = () => {
 
         toast.success("Match found! Game starting soon...");
         setIsSearching(false);
+        // Redirect to match page or show match details
       }
     } catch (error) {
       console.error('Error finding match:', error);
@@ -116,50 +118,60 @@ const Matchmaking = () => {
     <div className="min-h-screen bg-gaming-dark">
       <Navbar />
       <div className="container mx-auto px-4 pt-24">
-        <div className="max-w-2xl mx-auto text-center">
-          <h1 className="text-3xl font-bold text-white mb-6">Quick Match</h1>
-          
-          <div className="bg-gaming-dark/50 border border-gaming-accent/20 rounded-lg p-8 mb-8">
-            {profile && (
-              <div className="mb-6">
-                <UserRound className="w-16 h-16 mx-auto mb-4 text-gaming-accent" />
-                <p className="text-gray-300">
-                  Skill Rating: {profile.skill_rating}
-                </p>
-              </div>
-            )}
-            
-            <div className="space-y-4">
-              <Button 
-                onClick={handleMatchmaking}
-                className={`w-full ${
-                  isSearching 
-                    ? "bg-red-500 hover:bg-red-600" 
-                    : "bg-gaming-accent hover:bg-gaming-accent/90"
-                } text-gaming-dark`}
-                disabled={updateMatchmakingStatus.isPending}
-              >
-                {isSearching ? (
-                  <>
-                    <X className="mr-2" />
-                    Cancel Search
-                  </>
-                ) : (
-                  <>
-                    <Users className="mr-2" />
-                    Find Match
-                  </>
-                )}
-              </Button>
-              
-              {isSearching && (
-                <div className="flex items-center justify-center gap-2 text-gaming-accent">
-                  <Loader className="animate-spin" />
-                  <span>Searching for opponents...</span>
-                </div>
-              )}
-            </div>
+        <div className="max-w-2xl mx-auto">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold text-white mb-2 flex items-center justify-center gap-2">
+              <Swords className="text-gaming-accent" />
+              Quick Match
+            </h1>
+            <p className="text-gray-400">Find opponents of similar skill level</p>
           </div>
+          
+          <Card className="bg-gaming-dark/50 border border-gaming-accent/20">
+            <CardHeader>
+              <CardTitle className="text-center">Your Profile</CardTitle>
+              <CardDescription className="text-center">
+                Current matchmaking status
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col items-center gap-6">
+                <div className="text-center">
+                  <UserRound className="w-16 h-16 mx-auto mb-4 text-gaming-accent" />
+                  <p className="text-gray-300 mb-2">
+                    Skill Rating: {profile?.skill_rating}
+                  </p>
+                  {isSearching && (
+                    <p className="text-gaming-accent animate-pulse">
+                      Searching for opponents...
+                    </p>
+                  )}
+                </div>
+                
+                <Button 
+                  onClick={handleMatchmaking}
+                  className={`w-full max-w-sm ${
+                    isSearching 
+                      ? "bg-red-500 hover:bg-red-600" 
+                      : "bg-gaming-accent hover:bg-gaming-accent/90"
+                  } text-gaming-dark`}
+                  disabled={updateMatchmakingStatus.isPending}
+                >
+                  {isSearching ? (
+                    <>
+                      <X className="mr-2" />
+                      Cancel Search
+                    </>
+                  ) : (
+                    <>
+                      <Users className="mr-2" />
+                      Find Match
+                    </>
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
