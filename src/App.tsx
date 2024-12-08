@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import Tournaments from "./pages/Tournaments";
 import TournamentDetails from "./pages/TournamentDetails";
 import Matchmaking from "./pages/Matchmaking";
+import MatchDetails from "./pages/MatchDetails";
 import Profile from "./pages/Profile";
 import Auth from "./pages/Auth";
 import TournamentManagement from "./pages/admin/TournamentManagement";
@@ -70,6 +71,12 @@ const App = () => {
                 path="/matchmaking" 
                 element={
                   session ? <Matchmaking /> : <Navigate to="/login" replace />
+                } 
+              />
+              <Route 
+                path="/matches/:id" 
+                element={
+                  session ? <MatchDetails /> : <Navigate to="/login" replace />
                 } 
               />
               <Route 

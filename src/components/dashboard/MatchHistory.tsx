@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { History } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -17,6 +18,8 @@ interface MatchHistoryProps {
 }
 
 const MatchHistory = ({ matches, isLoading }: MatchHistoryProps) => {
+  const navigate = useNavigate();
+
   return (
     <Card className="bg-gaming-dark/50 border-gaming-accent/20">
       <CardHeader>
@@ -35,7 +38,8 @@ const MatchHistory = ({ matches, isLoading }: MatchHistoryProps) => {
             {matches?.map((match) => (
               <div
                 key={match.id}
-                className="flex items-center justify-between p-4 rounded-lg bg-gaming-dark/30 border border-gaming-accent/10"
+                className="flex items-center justify-between p-4 rounded-lg bg-gaming-dark/30 border border-gaming-accent/10 cursor-pointer hover:border-gaming-accent/30 transition-colors"
+                onClick={() => navigate(`/matches/${match.id}`)}
               >
                 <div className="flex items-center gap-4">
                   <div className="text-sm">
@@ -49,6 +53,8 @@ const MatchHistory = ({ matches, isLoading }: MatchHistoryProps) => {
                   <div className={`text-sm px-2 py-1 rounded ${
                     match.status === 'completed'
                       ? 'bg-green-500/20 text-green-400'
+                      : match.status === 'in_progress'
+                      ? 'bg-blue-500/20 text-blue-400'
                       : 'bg-yellow-500/20 text-yellow-400'
                   }`}>
                     {match.status}
