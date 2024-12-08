@@ -14,6 +14,12 @@ import {
 } from "@/components/ui/card";
 import Navbar from '@/components/Navbar';
 import { supabase } from "@/integrations/supabase/client";
+import type { Database } from "@/integrations/supabase/types";
+
+type Match = Database['public']['Tables']['matches']['Row'] & {
+  player1: { username: string; skill_rating: number };
+  player2: { username: string; skill_rating: number };
+};
 
 const MatchDetails = () => {
   const { id } = useParams();
@@ -35,7 +41,7 @@ const MatchDetails = () => {
         .single();
 
       if (error) throw error;
-      return data;
+      return data as Match;
     },
     enabled: !!id,
   });
@@ -58,14 +64,17 @@ const MatchDetails = () => {
           console.log('Match update received:', payload);
           queryClient.invalidateQueries({ queryKey: ['match', id] });
           
+          const oldRow = payload.old as Database['public']['Tables']['matches']['Row'];
+          const newRow = payload.new as Database['public']['Tables']['matches']['Row'];
+          
           // Show toast notification for status changes
-          if (payload.new.status !== payload.old?.status) {
-            toast.info(`Match status updated to: ${payload.new.status}`);
+          if (newRow.status !== oldRow?.status) {
+            toast.info(`Match status updated to: ${newRow.status}`);
           }
           
           // Show toast notification for score updates
-          if (payload.new.score_player1 !== payload.old?.score_player1 || 
-              payload.new.score_player2 !== payload.old?.score_player2) {
+          if (newRow.score_player1 !== oldRow?.score_player1 || 
+              newRow.score_player2 !== oldRow?.score_player2) {
             toast.info('Match scores have been updated');
           }
         }
