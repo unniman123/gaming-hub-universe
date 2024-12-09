@@ -1,38 +1,25 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSessionContext } from '@supabase/auth-helpers-react';
-import { MessageCircle, X, Send } from "lucide-react";
+import { MessageCircle, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-
-interface Message {
-  id: string;
-  sender_id: string;
-  receiver_id: string;
-  message: string;
-  created_at: string;
-  profiles?: {
-    username: string;
-    avatar_url: string;
-  };
-}
+import ChatUserList from './ChatUserList';
+import ChatMessages from './ChatMessages';
+import ChatInput from './ChatInput';
 
 const GlobalChat = () => {
   const { session } = useSessionContext();
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
-  const [selectedUser, setSelectedUser] = useState<string | null>(null);
-  const [onlineUsers, setOnlineUsers] = useState<any[]>([]);
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [onlineUsers, setOnlineUsers] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     if (!session?.user?.id || !selectedUser) return;
 
-    // Fetch existing messages
     const fetchMessages = async () => {
       const { data, error } = await supabase
         .from('direct_messages')
@@ -50,7 +37,6 @@ const GlobalChat = () => {
 
     fetchMessages();
 
-    // Subscribe to new messages
     const channel = supabase
       .channel(`direct_messages:${session.user.id}`)
       .on(
@@ -62,8 +48,7 @@ const GlobalChat = () => {
           filter: `receiver_id=eq.${session.user.id}`,
         },
         (payload) => {
-          const newMessage = payload.new as Message;
-          setMessages((prev) => [...prev, newMessage]);
+          setMessages((prev) => [...prev, payload.new]);
           toast.info('New message received!');
         }
       )
@@ -75,7 +60,6 @@ const GlobalChat = () => {
   }, [session?.user?.id, selectedUser]);
 
   useEffect(() => {
-    // Track user presence
     const channel = supabase.channel('online_users', {
       config: {
         presence: {
@@ -137,66 +121,25 @@ const GlobalChat = () => {
             </Button>
           </div>
 
-          <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
-            {selectedUser ? (
-              <div className="space-y-4">
-                {messages.map((message) => (
-                  <div
-                    key={message.id}
-                    className={`flex ${
-                      message.sender_id === session?.user?.id ? 'justify-end' : 'justify-start'
-                    }`}
-                  >
-                    <div
-                      className={`max-w-[80%] rounded-lg p-3 ${
-                        message.sender_id === session?.user?.id
-                          ? 'bg-gaming-accent text-white'
-                          : 'bg-gray-700 text-white'
-                      }`}
-                    >
-                      <p className="text-xs opacity-75 mb-1">
-                        {message.profiles?.username || 'Unknown User'}
-                      </p>
-                      <p>{message.message}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {onlineUsers.map((user: any) => (
-                  <Button
-                    key={user.user_id}
-                    variant="ghost"
-                    className="w-full justify-start"
-                    onClick={() => setSelectedUser(user.user_id)}
-                  >
-                    <Avatar className="h-6 w-6 mr-2">
-                      <AvatarImage src={user.avatar_url} />
-                      <AvatarFallback>U</AvatarFallback>
-                    </Avatar>
-                    <span className="flex-1 text-left">{user.username}</span>
-                    <div className="h-2 w-2 rounded-full bg-green-500" />
-                  </Button>
-                ))}
-              </div>
-            )}
-          </ScrollArea>
-
-          {selectedUser && (
-            <form onSubmit={handleSendMessage} className="p-4 border-t border-gaming-accent/20">
-              <div className="flex gap-2">
-                <Input
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  placeholder="Type your message..."
-                  className="flex-1 bg-gaming-dark/50 border-gaming-accent/20 text-white"
-                />
-                <Button type="submit" className="bg-gaming-accent hover:bg-gaming-accent/80">
-                  <Send className="h-4 w-4" />
-                </Button>
-              </div>
-            </form>
+          {selectedUser ? (
+            <>
+              <ChatMessages 
+                messages={messages} 
+                currentUserId={session?.user?.id} 
+              />
+              <ChatInput
+                newMessage={newMessage}
+                onMessageChange={setNewMessage}
+                onSendMessage={handleSendMessage}
+              />
+            </>
+          ) : (
+            <ChatUserList
+              users={onlineUsers}
+              onSelectUser={setSelectedUser}
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+            />
           )}
         </div>
       ) : (

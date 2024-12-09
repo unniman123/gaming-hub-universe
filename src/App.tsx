@@ -2,18 +2,10 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter } from "react-router-dom";
 import { SessionContextProvider } from '@supabase/auth-helpers-react';
 import { useState, useEffect } from 'react';
-import Index from "./pages/Index";
-import Tournaments from "./pages/Tournaments";
-import TournamentDetails from "./pages/TournamentDetails";
-import Matchmaking from "./pages/Matchmaking";
-import MatchDetails from "./pages/MatchDetails";
-import Profile from "./pages/Profile";
-import Auth from "./pages/Auth";
-import TournamentManagement from "./pages/admin/TournamentManagement";
-import UserManagement from "./pages/admin/UserManagement";
+import AppRoutes from "./components/routing/AppRoutes";
 import GlobalChat from "./components/chat/GlobalChat";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -49,57 +41,7 @@ const App = () => {
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <Routes>
-              <Route 
-                path="/" 
-                element={
-                  session ? <Index /> : <Navigate to="/login" replace />
-                } 
-              />
-              <Route 
-                path="/tournaments" 
-                element={
-                  session ? <Tournaments /> : <Navigate to="/login" replace />
-                } 
-              />
-              <Route 
-                path="/tournaments/:id" 
-                element={
-                  session ? <TournamentDetails /> : <Navigate to="/login" replace />
-                } 
-              />
-              <Route 
-                path="/matchmaking" 
-                element={
-                  session ? <Matchmaking /> : <Navigate to="/login" replace />
-                } 
-              />
-              <Route 
-                path="/matches/:id" 
-                element={
-                  session ? <MatchDetails /> : <Navigate to="/login" replace />
-                } 
-              />
-              <Route 
-                path="/profile" 
-                element={
-                  session ? <Profile /> : <Navigate to="/login" replace />
-                } 
-              />
-              <Route 
-                path="/admin/tournaments" 
-                element={
-                  session ? <TournamentManagement /> : <Navigate to="/login" replace />
-                } 
-              />
-              <Route 
-                path="/admin/users" 
-                element={
-                  session ? <UserManagement /> : <Navigate to="/login" replace />
-                } 
-              />
-              <Route path="/login" element={<Auth />} />
-            </Routes>
+            <AppRoutes />
             {session && <GlobalChat />}
           </BrowserRouter>
         </TooltipProvider>
