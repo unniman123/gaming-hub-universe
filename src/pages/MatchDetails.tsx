@@ -185,7 +185,7 @@ const MatchDetails = () => {
 
             <div className="space-y-8">
               <MatchRules
-                timeLimit={match.tournaments?.match_time_limit || '30 minutes'}
+                timeLimit={match.tournaments?.match_time_limit?.toString() || '30 minutes'}
                 tournamentRules={match.tournaments?.tournament_rules || 'No specific rules provided.'}
                 disputeRules={match.tournaments?.dispute_resolution_rules || 'Contact tournament admin for dispute resolution.'}
               />

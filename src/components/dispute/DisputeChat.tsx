@@ -35,11 +35,14 @@ const DisputeChat = ({ disputeId }: DisputeChatProps) => {
 
   const sendMessage = useMutation({
     mutationFn: async (newMessage: string) => {
+      if (!session?.user?.id) throw new Error('User not authenticated');
+      
       const { error } = await supabase
         .from('dispute_messages')
         .insert({
           dispute_id: disputeId,
           message: newMessage,
+          sender_id: session.user.id
         });
 
       if (error) throw error;

@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useSessionContext } from '@supabase/auth-helpers-react';
 
 interface DisputeFormProps {
   matchId: string;
@@ -19,14 +20,18 @@ interface DisputeFormData {
 
 const DisputeForm = ({ matchId, againstId, onDisputeCreated }: DisputeFormProps) => {
   const { register, handleSubmit, reset, formState: { isSubmitting } } = useForm<DisputeFormData>();
+  const { session } = useSessionContext();
 
   const onSubmit = async (data: DisputeFormData) => {
     try {
+      if (!session?.user?.id) throw new Error('User not authenticated');
+
       const { error } = await supabase
         .from('dispute_cases')
         .insert({
           match_id: matchId,
           against_id: againstId,
+          reported_by_id: session.user.id,
           title: data.title,
           description: data.description,
         });
