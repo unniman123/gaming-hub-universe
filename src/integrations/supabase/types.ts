@@ -9,6 +9,48 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      match_chat: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_system_message: boolean | null
+          match_id: string | null
+          message: string
+          sender_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_system_message?: boolean | null
+          match_id?: string | null
+          message: string
+          sender_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_system_message?: boolean | null
+          match_id?: string | null
+          message?: string
+          sender_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_chat_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "match_chat_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       matches: {
         Row: {
           created_at: string
@@ -163,42 +205,51 @@ export type Database = {
           created_at: string
           creator_id: string
           description: string | null
+          dispute_resolution_rules: string | null
           end_date: string | null
           game_type: string
           id: string
+          match_time_limit: unknown | null
           max_participants: number
           prize_pool: number | null
           start_date: string
           status: string | null
           title: string
+          tournament_rules: string | null
           updated_at: string
         }
         Insert: {
           created_at?: string
           creator_id: string
           description?: string | null
+          dispute_resolution_rules?: string | null
           end_date?: string | null
           game_type: string
           id?: string
+          match_time_limit?: unknown | null
           max_participants: number
           prize_pool?: number | null
           start_date: string
           status?: string | null
           title: string
+          tournament_rules?: string | null
           updated_at?: string
         }
         Update: {
           created_at?: string
           creator_id?: string
           description?: string | null
+          dispute_resolution_rules?: string | null
           end_date?: string | null
           game_type?: string
           id?: string
+          match_time_limit?: unknown | null
           max_participants?: number
           prize_pool?: number | null
           start_date?: string
           status?: string | null
           title?: string
+          tournament_rules?: string | null
           updated_at?: string
         }
         Relationships: [

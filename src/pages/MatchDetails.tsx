@@ -3,23 +3,13 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSessionContext } from '@supabase/auth-helpers-react';
 import { toast } from "sonner";
-import { ArrowLeft, Trophy, Swords, User } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import Navbar from '@/components/Navbar';
+import MatchInfo from '@/components/match/MatchInfo';
+import MatchChat from '@/components/match/MatchChat';
+import MatchRules from '@/components/match/MatchRules';
 import { supabase } from "@/integrations/supabase/client";
-import type { Database } from "@/integrations/supabase/types";
-
-type Match = Database['public']['Tables']['matches']['Row'] & {
-  player1: { username: string; skill_rating: number };
-  player2: { username: string; skill_rating: number };
-};
 
 const MatchDetails = () => {
   const { id } = useParams();
@@ -35,13 +25,18 @@ const MatchDetails = () => {
         .select(`
           *,
           player1:profiles!matches_player1_id_fkey(username, skill_rating),
-          player2:profiles!matches_player2_id_fkey(username, skill_rating)
+          player2:profiles!matches_player2_id_fkey(username, skill_rating),
+          tournaments(
+            match_time_limit,
+            tournament_rules,
+            dispute_resolution_rules
+          )
         `)
         .eq('id', id)
         .single();
 
       if (error) throw error;
-      return data as Match;
+      return data;
     },
     enabled: !!id,
   });
@@ -60,23 +55,8 @@ const MatchDetails = () => {
           table: 'matches',
           filter: `id=eq.${id}`,
         },
-        (payload) => {
-          console.log('Match update received:', payload);
+        () => {
           queryClient.invalidateQueries({ queryKey: ['match', id] });
-          
-          const oldRow = payload.old as Database['public']['Tables']['matches']['Row'];
-          const newRow = payload.new as Database['public']['Tables']['matches']['Row'];
-          
-          // Show toast notification for status changes
-          if (newRow.status !== oldRow?.status) {
-            toast.info(`Match status updated to: ${newRow.status}`);
-          }
-          
-          // Show toast notification for score updates
-          if (newRow.score_player1 !== oldRow?.score_player1 || 
-              newRow.score_player2 !== oldRow?.score_player2) {
-            toast.info('Match scores have been updated');
-          }
         }
       )
       .subscribe();
@@ -156,80 +136,43 @@ const MatchDetails = () => {
           Back
         </Button>
 
-        <Card className="bg-gaming-dark/50 border-gaming-accent/20">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Swords className="text-gaming-accent" />
-              Match Details
-            </CardTitle>
-            <CardDescription>
-              Match Status: {match.status}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid md:grid-cols-3 gap-4">
-              {/* Player 1 */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-sm font-medium flex items-center gap-2">
-                    <User className="h-4 w-4" />
-                    {match.player1.username}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p>Rating: {match.player1.skill_rating}</p>
-                  {match.score_player1 !== null && (
-                    <p className="text-2xl font-bold mt-2">{match.score_player1}</p>
-                  )}
-                </CardContent>
-              </Card>
+        <div className="space-y-8">
+          <MatchInfo
+            player1={match.player1}
+            player2={match.player2}
+            score1={match.score_player1}
+            score2={match.score_player2}
+            winnerId={match.winner_id}
+            player1Id={match.player1_id}
+            player2Id={match.player2_id}
+          />
 
-              {/* VS Section */}
-              <Card className="flex items-center justify-center">
-                <CardContent>
-                  <div className="text-2xl font-bold">VS</div>
-                  {match.status === 'completed' && match.winner_id && (
-                    <div className="mt-4 flex items-center gap-2">
-                      <Trophy className="text-gaming-accent" />
-                      Winner: {
-                        match.winner_id === match.player1_id 
-                          ? match.player1.username 
-                          : match.player2.username
-                      }
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+          <div className="grid md:grid-cols-2 gap-8">
+            <MatchChat
+              matchId={match.id}
+              player1Username={match.player1.username}
+              player2Username={match.player2.username}
+            />
 
-              {/* Player 2 */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-sm font-medium flex items-center gap-2">
-                    <User className="h-4 w-4" />
-                    {match.player2.username}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p>Rating: {match.player2.skill_rating}</p>
-                  {match.score_player2 !== null && (
-                    <p className="text-2xl font-bold mt-2">{match.score_player2}</p>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
+            <div className="space-y-8">
+              <MatchRules
+                timeLimit={match.tournaments?.match_time_limit || '30 minutes'}
+                tournamentRules={match.tournaments?.tournament_rules || 'No specific rules provided.'}
+                disputeRules={match.tournaments?.dispute_resolution_rules || 'Contact tournament admin for dispute resolution.'}
+              />
 
-            {isParticipant && match.status === 'in_progress' && (
-              <div className="mt-6 flex justify-center">
+              {isParticipant && match.status === 'in_progress' && (
                 <Button 
                   onClick={handleReportResult}
                   disabled={updateMatchMutation.isPending}
+                  className="w-full bg-gaming-accent hover:bg-gaming-accent/80"
                 >
                   Report Match Result
                 </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
