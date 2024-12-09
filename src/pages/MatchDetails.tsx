@@ -123,6 +123,11 @@ const MatchDetails = () => {
   const isParticipant = session?.user?.id === match.player1_id || 
                        session?.user?.id === match.player2_id;
 
+  // Convert interval to string format
+  const timeLimit = match.tournaments?.match_time_limit 
+    ? `${match.tournaments.match_time_limit} minutes`
+    : '30 minutes';
+
   return (
     <div className="min-h-screen bg-gaming-dark">
       <Navbar />
@@ -156,7 +161,7 @@ const MatchDetails = () => {
 
             <div className="space-y-8">
               <MatchRules
-                timeLimit={match.tournaments?.match_time_limit || '30 minutes'}
+                timeLimit={timeLimit}
                 tournamentRules={match.tournaments?.tournament_rules || 'No specific rules provided.'}
                 disputeRules={match.tournaments?.dispute_resolution_rules || 'Contact tournament admin for dispute resolution.'}
               />
