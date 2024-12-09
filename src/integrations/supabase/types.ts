@@ -9,6 +9,48 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      direct_messages: {
+        Row: {
+          created_at: string | null
+          id: string
+          message: string
+          read: boolean | null
+          receiver_id: string
+          sender_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          message: string
+          read?: boolean | null
+          receiver_id: string
+          sender_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          message?: string
+          read?: boolean | null
+          receiver_id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "direct_messages_receiver_id_fkey"
+            columns: ["receiver_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "direct_messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       match_chat: {
         Row: {
           created_at: string | null
@@ -129,10 +171,13 @@ export type Database = {
         Row: {
           avatar_url: string | null
           created_at: string
+          game_id: string | null
           gaming_experience: string | null
           id: string
           is_admin: boolean | null
           is_in_matchmaking: boolean | null
+          is_online: boolean | null
+          last_seen: string | null
           skill_rating: number | null
           updated_at: string
           username: string
@@ -140,10 +185,13 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           created_at?: string
+          game_id?: string | null
           gaming_experience?: string | null
           id: string
           is_admin?: boolean | null
           is_in_matchmaking?: boolean | null
+          is_online?: boolean | null
+          last_seen?: string | null
           skill_rating?: number | null
           updated_at?: string
           username: string
@@ -151,10 +199,13 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           created_at?: string
+          game_id?: string | null
           gaming_experience?: string | null
           id?: string
           is_admin?: boolean | null
           is_in_matchmaking?: boolean | null
+          is_online?: boolean | null
+          last_seen?: string | null
           skill_rating?: number | null
           updated_at?: string
           username?: string

@@ -14,6 +14,7 @@ import Profile from "./pages/Profile";
 import Auth from "./pages/Auth";
 import TournamentManagement from "./pages/admin/TournamentManagement";
 import UserManagement from "./pages/admin/UserManagement";
+import GlobalChat from "./components/chat/GlobalChat";
 import { supabase } from "@/integrations/supabase/client";
 
 const queryClient = new QueryClient();
@@ -99,6 +100,7 @@ const App = () => {
               />
               <Route path="/login" element={<Auth />} />
             </Routes>
+            {session && <GlobalChat />}
           </BrowserRouter>
         </TooltipProvider>
       </QueryClientProvider>
