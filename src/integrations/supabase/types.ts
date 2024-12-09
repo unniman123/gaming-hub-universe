@@ -51,6 +51,106 @@ export type Database = {
           },
         ]
       }
+      dispute_cases: {
+        Row: {
+          against_id: string
+          created_at: string | null
+          description: string
+          id: string
+          match_id: string
+          reported_by_id: string
+          resolution: string | null
+          status: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          against_id: string
+          created_at?: string | null
+          description: string
+          id?: string
+          match_id: string
+          reported_by_id: string
+          resolution?: string | null
+          status?: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          against_id?: string
+          created_at?: string | null
+          description?: string
+          id?: string
+          match_id?: string
+          reported_by_id?: string
+          resolution?: string | null
+          status?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dispute_cases_against_id_fkey"
+            columns: ["against_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dispute_cases_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dispute_cases_reported_by_id_fkey"
+            columns: ["reported_by_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dispute_messages: {
+        Row: {
+          created_at: string | null
+          dispute_id: string
+          id: string
+          message: string
+          sender_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          dispute_id: string
+          id?: string
+          message: string
+          sender_id: string
+        }
+        Update: {
+          created_at?: string | null
+          dispute_id?: string
+          id?: string
+          message?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dispute_messages_dispute_id_fkey"
+            columns: ["dispute_id"]
+            isOneToOne: false
+            referencedRelation: "dispute_cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dispute_messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       match_chat: {
         Row: {
           created_at: string | null

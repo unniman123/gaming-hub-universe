@@ -1,14 +1,18 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSessionContext } from '@supabase/auth-helpers-react';
 import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import Navbar from '@/components/Navbar';
 import MatchInfo from '@/components/match/MatchInfo';
 import MatchChat from '@/components/match/MatchChat';
 import MatchRules from '@/components/match/MatchRules';
+import DisputeForm from '@/components/dispute/DisputeForm';
+import DisputeList from '@/components/dispute/DisputeList';
+import DisputeChat from '@/components/dispute/DisputeChat';
 import { supabase } from "@/integrations/supabase/client";
 
 const MatchDetails = () => {
@@ -16,6 +20,7 @@ const MatchDetails = () => {
   const navigate = useNavigate();
   const { session } = useSessionContext();
   const queryClient = useQueryClient();
+  const [selectedDispute, setSelectedDispute] = useState<string | null>(null);
 
   const { data: match, isLoading } = useQuery({
     queryKey: ['match', id],
@@ -92,6 +97,10 @@ const MatchDetails = () => {
     },
   });
 
+  const handleDisputeCreated = () => {
+    queryClient.invalidateQueries({ queryKey: ['disputes', id] });
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gaming-dark">
@@ -117,10 +126,9 @@ const MatchDetails = () => {
   const isParticipant = session?.user?.id === match.player1_id || 
                        session?.user?.id === match.player2_id;
 
-  // Convert interval to string format
-  const timeLimit = match.tournaments?.match_time_limit 
-    ? `${match.tournaments.match_time_limit} minutes`
-    : '30 minutes';
+  const opponentId = session?.user?.id === match.player1_id 
+    ? match.player2_id 
+    : match.player1_id;
 
   return (
     <div className="min-h-screen bg-gaming-dark">
@@ -147,27 +155,62 @@ const MatchDetails = () => {
           />
 
           <div className="grid md:grid-cols-2 gap-8">
-            <MatchChat
-              matchId={match.id}
-              player1Username={match.player1.username}
-              player2Username={match.player2.username}
-            />
+            <div className="space-y-8">
+              <MatchChat
+                matchId={match.id}
+                player1Username={match.player1.username}
+                player2Username={match.player2.username}
+              />
+
+              {isParticipant && (
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button className="w-full bg-red-500 hover:bg-red-600">
+                      Report Issue
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="bg-gaming-dark border-gaming-accent/20">
+                    <DialogHeader>
+                      <DialogTitle className="text-white">Report Match Issue</DialogTitle>
+                    </DialogHeader>
+                    <DisputeForm
+                      matchId={match.id}
+                      againstId={opponentId}
+                      onDisputeCreated={handleDisputeCreated}
+                    />
+                  </DialogContent>
+                </Dialog>
+              )}
+            </div>
 
             <div className="space-y-8">
               <MatchRules
-                timeLimit={timeLimit}
+                timeLimit={match.tournaments?.match_time_limit || '30 minutes'}
                 tournamentRules={match.tournaments?.tournament_rules || 'No specific rules provided.'}
                 disputeRules={match.tournaments?.dispute_resolution_rules || 'Contact tournament admin for dispute resolution.'}
               />
 
-              {isParticipant && match.status === 'in_progress' && (
-                <Button 
-                  onClick={() => updateMatchMutation.mutate({ score1: 2, score2: 1 })}
-                  disabled={updateMatchMutation.isPending}
-                  className="w-full bg-gaming-accent hover:bg-gaming-accent/80"
-                >
-                  Report Match Result
-                </Button>
+              {isParticipant && (
+                <div className="space-y-4">
+                  <h3 className="text-xl font-semibold text-white">Match Disputes</h3>
+                  {selectedDispute ? (
+                    <>
+                      <Button
+                        variant="ghost"
+                        className="mb-4"
+                        onClick={() => setSelectedDispute(null)}
+                      >
+                        Back to Disputes
+                      </Button>
+                      <DisputeChat disputeId={selectedDispute} />
+                    </>
+                  ) : (
+                    <DisputeList
+                      matchId={match.id}
+                      onSelectDispute={setSelectedDispute}
+                    />
+                  )}
+                </div>
               )}
             </div>
           </div>
