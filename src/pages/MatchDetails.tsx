@@ -92,12 +92,6 @@ const MatchDetails = () => {
     },
   });
 
-  const handleReportResult = async () => {
-    // For this example, we'll use a simple score of 2-1
-    // In a real implementation, you'd want a proper form for score input
-    await updateMatchMutation.mutateAsync({ score1: 2, score2: 1 });
-  };
-
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gaming-dark">
@@ -168,7 +162,7 @@ const MatchDetails = () => {
 
               {isParticipant && match.status === 'in_progress' && (
                 <Button 
-                  onClick={handleReportResult}
+                  onClick={() => updateMatchMutation.mutate({ score1: 2, score2: 1 })}
                   disabled={updateMatchMutation.isPending}
                   className="w-full bg-gaming-accent hover:bg-gaming-accent/80"
                 >
