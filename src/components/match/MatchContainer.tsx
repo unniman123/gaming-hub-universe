@@ -2,7 +2,7 @@ import React from 'react';
 import MatchInfo from './MatchInfo';
 import MatchCommunication from './MatchCommunication';
 import MatchSidebar from './MatchSidebar';
-import { Profile, Tournament } from '@/integrations/supabase/types';
+import { Profile, Tournament } from '@/types/database';
 
 interface MatchContainerProps {
   match: {

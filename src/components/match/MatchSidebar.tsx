@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import MatchRules from './MatchRules';
 import DisputeList from '../dispute/DisputeList';
 import DisputeChat from '../dispute/DisputeChat';
-import { Tournament } from '@/integrations/supabase/types';
+import { Tournament } from '@/types/database';
 
 interface MatchSidebarProps {
   matchId: string;
