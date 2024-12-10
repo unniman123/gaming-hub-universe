@@ -18,8 +18,8 @@ const MatchDetails = () => {
         .from('matches')
         .select(`
           *,
-          player1:profiles!matches_player1_id_fkey(username, skill_rating),
-          player2:profiles!matches_player2_id_fkey(username, skill_rating),
+          player1:profiles!matches_player1_id_fkey(*),
+          player2:profiles!matches_player2_id_fkey(*),
           tournaments(
             match_time_limit,
             tournament_rules,

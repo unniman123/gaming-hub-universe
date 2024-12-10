@@ -32,13 +32,35 @@ const TournamentLeaderboard = ({ tournamentId, isFinished }: TournamentLeaderboa
     queryKey: ['tournament-leaderboard', tournamentId],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('tournament_leaderboard')
-        .select('*')
+        .from('tournament_participants')
+        .select(`
+          tournament_id,
+          player_id,
+          wins,
+          losses,
+          points,
+          matches_played,
+          profiles:player_id (
+            username
+          )
+        `)
         .eq('tournament_id', tournamentId)
         .order('points', { ascending: false });
 
       if (error) throw error;
-      return data as LeaderboardEntry[];
+
+      return data.map(entry => ({
+        tournament_id: entry.tournament_id,
+        player_id: entry.player_id,
+        username: entry.profiles.username,
+        wins: entry.wins,
+        losses: entry.losses,
+        points: entry.points,
+        matches_played: entry.matches_played,
+        win_rate: entry.matches_played > 0 
+          ? Math.round((entry.wins / entry.matches_played) * 100) 
+          : 0
+      })) as LeaderboardEntry[];
     },
     enabled: !!tournamentId,
   });
