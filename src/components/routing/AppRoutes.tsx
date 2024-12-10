@@ -64,7 +64,7 @@ const AppRoutes = () => {
       <Route 
         path="/admin/tournaments" 
         element={
-          <PrivateRoute>
+          <PrivateRoute adminOnly>
             <TournamentManagement />
           </PrivateRoute>
         } 
@@ -72,7 +72,7 @@ const AppRoutes = () => {
       <Route 
         path="/admin/users" 
         element={
-          <PrivateRoute>
+          <PrivateRoute adminOnly>
             <UserManagement />
           </PrivateRoute>
         } 

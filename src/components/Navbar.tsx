@@ -1,15 +1,31 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Trophy, Users, User, LogOut } from "lucide-react";
+import { Trophy, Users, User, LogOut, Shield } from "lucide-react";
 import { useSessionContext } from '@supabase/auth-helpers-react';
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useQuery } from '@tanstack/react-query';
 
 const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { session } = useSessionContext();
+
+  const { data: userProfile } = useQuery({
+    queryKey: ['userProfile', session?.user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', session?.user?.id)
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!session?.user?.id,
+  });
 
   const handleLogout = async () => {
     try {
@@ -48,6 +64,17 @@ const Navbar = () => {
                 <Users size={18} />
                 Matchmaking
               </Link>
+              {userProfile?.is_admin && (
+                <Link 
+                  to="/admin/tournaments" 
+                  className={`flex items-center gap-2 text-gray-300 hover:text-gaming-accent transition-colors ${
+                    location.pathname.startsWith('/admin') ? 'text-gaming-accent' : ''
+                  }`}
+                >
+                  <Shield size={18} />
+                  Admin Panel
+                </Link>
+              )}
             </div>
           </div>
           <div className="flex items-center space-x-4">
