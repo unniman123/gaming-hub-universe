@@ -23,7 +23,7 @@ const PrivateRoute = ({ children, adminOnly = false }: PrivateRouteProps) => {
       if (error) throw error;
       return data;
     },
-    enabled: !!session?.user?.id && adminOnly,
+    enabled: !!session?.user?.id,
   });
 
   if (!session) {

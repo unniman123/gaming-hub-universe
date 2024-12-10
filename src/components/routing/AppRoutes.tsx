@@ -13,54 +13,14 @@ import UserManagement from "@/pages/admin/UserManagement";
 const AppRoutes = () => {
   return (
     <Routes>
-      <Route 
-        path="/" 
-        element={
-          <PrivateRoute>
-            <Index />
-          </PrivateRoute>
-        } 
-      />
-      <Route 
-        path="/tournaments" 
-        element={
-          <PrivateRoute>
-            <Tournaments />
-          </PrivateRoute>
-        } 
-      />
-      <Route 
-        path="/tournaments/:id" 
-        element={
-          <PrivateRoute>
-            <TournamentDetails />
-          </PrivateRoute>
-        } 
-      />
-      <Route 
-        path="/matchmaking" 
-        element={
-          <PrivateRoute>
-            <Matchmaking />
-          </PrivateRoute>
-        } 
-      />
-      <Route 
-        path="/matches/:id" 
-        element={
-          <PrivateRoute>
-            <MatchDetails />
-          </PrivateRoute>
-        } 
-      />
-      <Route 
-        path="/profile" 
-        element={
-          <PrivateRoute>
-            <Profile />
-          </PrivateRoute>
-        } 
-      />
+      <Route path="/" element={<PrivateRoute><Index /></PrivateRoute>} />
+      <Route path="/tournaments" element={<PrivateRoute><Tournaments /></PrivateRoute>} />
+      <Route path="/tournaments/:id" element={<PrivateRoute><TournamentDetails /></PrivateRoute>} />
+      <Route path="/matchmaking" element={<PrivateRoute><Matchmaking /></PrivateRoute>} />
+      <Route path="/matches/:id" element={<PrivateRoute><MatchDetails /></PrivateRoute>} />
+      <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
+      
+      {/* Admin Routes */}
       <Route 
         path="/admin/tournaments" 
         element={
@@ -77,6 +37,7 @@ const AppRoutes = () => {
           </PrivateRoute>
         } 
       />
+      
       <Route path="/login" element={<Auth />} />
     </Routes>
   );
