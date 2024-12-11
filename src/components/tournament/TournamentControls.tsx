@@ -7,10 +7,16 @@ import { toast } from "sonner";
 interface TournamentControlsProps {
   tournamentId: string;
   status: string;
+  prizeDistributed?: boolean;
   onUpdate?: () => void;
 }
 
-const TournamentControls = ({ tournamentId, status, onUpdate }: TournamentControlsProps) => {
+const TournamentControls = ({ 
+  tournamentId, 
+  status, 
+  prizeDistributed = false,
+  onUpdate 
+}: TournamentControlsProps) => {
   const handleStartTournament = async () => {
     try {
       await generateTournamentMatches(tournamentId);
@@ -41,7 +47,7 @@ const TournamentControls = ({ tournamentId, status, onUpdate }: TournamentContro
           Start Tournament
         </Button>
       )}
-      {status === 'completed' && !status.prize_distributed && (
+      {status === 'completed' && !prizeDistributed && (
         <Button onClick={handleDistributePrizes}>
           <Award className="w-4 h-4 mr-2" />
           Distribute Prizes
