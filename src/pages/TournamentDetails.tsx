@@ -1,8 +1,9 @@
 import React from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useSessionContext } from '@supabase/auth-helpers-react';
 import Navbar from '@/components/Navbar';
+import TournamentBracket from '@/components/tournament/TournamentBracket';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +13,7 @@ import { format } from 'date-fns';
 
 const TournamentDetails = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { session } = useSessionContext();
 
   const { data: tournament, isLoading: tournamentLoading } = useQuery({
@@ -45,6 +47,10 @@ const TournamentDetails = () => {
     },
     enabled: !!id,
   });
+
+  const handleMatchClick = (matchId: string) => {
+    navigate(`/matches/${matchId}`);
+  };
 
   if (tournamentLoading) {
     return (
@@ -111,6 +117,19 @@ const TournamentDetails = () => {
               </p>
             </CardContent>
           </Card>
+        </div>
+
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+            <Trophy className="text-gaming-accent" />
+            Tournament Bracket
+          </h2>
+          {tournament && (
+            <TournamentBracket
+              tournamentId={tournament.id}
+              onMatchClick={handleMatchClick}
+            />
+          )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
