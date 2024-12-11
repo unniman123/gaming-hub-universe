@@ -270,6 +270,38 @@ export type Database = {
           },
         ]
       }
+      prize_tiers: {
+        Row: {
+          created_at: string | null
+          id: string
+          percentage: number
+          position: number
+          tournament_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          percentage: number
+          position: number
+          tournament_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          percentage?: number
+          position?: number
+          tournament_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prize_tiers_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -377,6 +409,7 @@ export type Database = {
           id: string
           match_time_limit: unknown | null
           max_participants: number
+          prize_distributed: boolean | null
           prize_pool: number | null
           start_date: string
           status: string | null
@@ -394,6 +427,7 @@ export type Database = {
           id?: string
           match_time_limit?: unknown | null
           max_participants: number
+          prize_distributed?: boolean | null
           prize_pool?: number | null
           start_date: string
           status?: string | null
@@ -411,6 +445,7 @@ export type Database = {
           id?: string
           match_time_limit?: unknown | null
           max_participants?: number
+          prize_distributed?: boolean | null
           prize_pool?: number | null
           start_date?: string
           status?: string | null
