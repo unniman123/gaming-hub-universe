@@ -315,24 +315,36 @@ export type Database = {
       tournament_participants: {
         Row: {
           id: string
+          losses: number | null
+          matches_played: number | null
           player_id: string
+          points: number | null
           registration_date: string
           status: string | null
           tournament_id: string
+          wins: number | null
         }
         Insert: {
           id?: string
+          losses?: number | null
+          matches_played?: number | null
           player_id: string
+          points?: number | null
           registration_date?: string
           status?: string | null
           tournament_id: string
+          wins?: number | null
         }
         Update: {
           id?: string
+          losses?: number | null
+          matches_played?: number | null
           player_id?: string
+          points?: number | null
           registration_date?: string
           status?: string | null
           tournament_id?: string
+          wins?: number | null
         }
         Relationships: [
           {
