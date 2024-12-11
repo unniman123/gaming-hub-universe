@@ -10,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 const MatchDetails = () => {
   const { id } = useParams();
   const { session } = useSessionContext();
-
+  
   const { data: match, isLoading } = useQuery({
     queryKey: ['match', id],
     queryFn: async () => {
@@ -20,11 +20,7 @@ const MatchDetails = () => {
           *,
           player1:profiles!matches_player1_id_fkey(*),
           player2:profiles!matches_player2_id_fkey(*),
-          tournaments(
-            match_time_limit,
-            tournament_rules,
-            dispute_resolution_rules
-          )
+          tournaments(*)
         `)
         .eq('id', id)
         .single();
