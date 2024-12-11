@@ -201,6 +201,7 @@ export type Database = {
           match_date: string
           player1_id: string
           player2_id: string
+          round: number | null
           score_player1: number | null
           score_player2: number | null
           status: Database["public"]["Enums"]["match_status"] | null
@@ -215,6 +216,7 @@ export type Database = {
           match_date: string
           player1_id: string
           player2_id: string
+          round?: number | null
           score_player1?: number | null
           score_player2?: number | null
           status?: Database["public"]["Enums"]["match_status"] | null
@@ -229,6 +231,7 @@ export type Database = {
           match_date?: string
           player1_id?: string
           player2_id?: string
+          round?: number | null
           score_player1?: number | null
           score_player2?: number | null
           status?: Database["public"]["Enums"]["match_status"] | null
