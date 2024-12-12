@@ -10,6 +10,8 @@ interface MatchSidebarProps {
   tournament?: {
     title: string;
     tournament_rules?: string | null;
+    match_time_limit?: string;
+    dispute_resolution_rules?: string;
   } | null;
   player1Id: string;
   player2Id: string;
@@ -57,7 +59,11 @@ const MatchSidebar = ({
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <MatchRules rules={tournament.tournament_rules} />
+            <MatchRules 
+              timeLimit={tournament.match_time_limit || "30 minutes"}
+              tournamentRules={tournament.tournament_rules}
+              disputeRules={tournament.dispute_resolution_rules || "Standard dispute resolution rules apply."}
+            />
           </CardContent>
         </Card>
       )}
