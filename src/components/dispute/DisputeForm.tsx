@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useSessionContext } from '@supabase/auth-helpers-react';
@@ -16,10 +17,11 @@ interface DisputeFormProps {
 interface DisputeFormData {
   title: string;
   description: string;
+  type: string;
 }
 
 const DisputeForm = ({ matchId, againstId, onDisputeCreated }: DisputeFormProps) => {
-  const { register, handleSubmit, reset, formState: { isSubmitting } } = useForm<DisputeFormData>();
+  const { register, handleSubmit, reset, setValue, formState: { isSubmitting } } = useForm<DisputeFormData>();
   const { session } = useSessionContext();
 
   const onSubmit = async (data: DisputeFormData) => {
@@ -34,6 +36,7 @@ const DisputeForm = ({ matchId, againstId, onDisputeCreated }: DisputeFormProps)
           reported_by_id: session.user.id,
           title: data.title,
           description: data.description,
+          status: 'pending',
         });
 
       if (error) throw error;
@@ -55,6 +58,19 @@ const DisputeForm = ({ matchId, againstId, onDisputeCreated }: DisputeFormProps)
           placeholder="Dispute Title"
           className="bg-gaming-dark/50 border-gaming-accent/20 text-white"
         />
+      </div>
+      <div>
+        <Select onValueChange={(value) => setValue('type', value)}>
+          <SelectTrigger className="bg-gaming-dark/50 border-gaming-accent/20 text-white">
+            <SelectValue placeholder="Select dispute type" />
+          </SelectTrigger>
+          <SelectContent className="bg-gaming-dark border-gaming-accent/20">
+            <SelectItem value="score">Score Dispute</SelectItem>
+            <SelectItem value="rules">Rules Violation</SelectItem>
+            <SelectItem value="behavior">Player Behavior</SelectItem>
+            <SelectItem value="technical">Technical Issue</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
       <div>
         <Textarea

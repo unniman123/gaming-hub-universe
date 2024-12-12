@@ -1,8 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { useQueryClient } from '@tanstack/react-query';
 import MatchChat from './MatchChat';
 import DisputeForm from '../dispute/DisputeForm';
+import DisputeList from '../dispute/DisputeList';
+import DisputeChat from '../dispute/DisputeChat';
 
 interface MatchCommunicationProps {
   matchId: string;
@@ -19,8 +22,11 @@ const MatchCommunication = ({
   isParticipant,
   opponentId
 }: MatchCommunicationProps) => {
+  const [selectedDisputeId, setSelectedDisputeId] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+
   const handleDisputeCreated = () => {
-    // Invalidate disputes query
+    queryClient.invalidateQueries({ queryKey: ['disputes', matchId] });
   };
 
   return (
@@ -31,7 +37,7 @@ const MatchCommunication = ({
         player2Username={player2Username}
       />
 
-      {isParticipant && (
+      {isParticipant && !selectedDisputeId && (
         <Dialog>
           <DialogTrigger asChild>
             <Button className="w-full bg-red-500 hover:bg-red-600">
@@ -50,6 +56,27 @@ const MatchCommunication = ({
           </DialogContent>
         </Dialog>
       )}
+
+      <div className="space-y-4">
+        <h3 className="text-xl font-bold text-white">Match Disputes</h3>
+        {selectedDisputeId ? (
+          <div className="space-y-4">
+            <Button
+              variant="outline"
+              onClick={() => setSelectedDisputeId(null)}
+              className="mb-4"
+            >
+              Back to Disputes List
+            </Button>
+            <DisputeChat disputeId={selectedDisputeId} />
+          </div>
+        ) : (
+          <DisputeList
+            matchId={matchId}
+            onSelectDispute={(disputeId) => setSelectedDisputeId(disputeId)}
+          />
+        )}
+      </div>
     </div>
   );
 };
