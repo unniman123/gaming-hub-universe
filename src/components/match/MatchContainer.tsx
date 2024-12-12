@@ -46,7 +46,12 @@ const MatchContainer = ({ match, isParticipant, opponentId }: MatchContainerProp
         <MatchSidebar
           matchId={match.id}
           isParticipant={isParticipant}
-          tournament={match.tournaments}
+          tournament={match.tournaments ? {
+            title: match.tournaments.title,
+            tournament_rules: match.tournaments.tournament_rules,
+            match_time_limit: match.tournaments.match_time_limit?.toString() || "30 minutes",
+            dispute_resolution_rules: match.tournaments.dispute_resolution_rules || "Standard dispute resolution rules apply."
+          } : null}
           player1Id={match.player1_id}
           player2Id={match.player2_id}
           currentStatus={match.status}
