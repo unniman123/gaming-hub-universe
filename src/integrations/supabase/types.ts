@@ -53,6 +53,7 @@ export type Database = {
       }
       dispute_cases: {
         Row: {
+          admin_notes: string | null
           against_id: string
           created_at: string | null
           description: string
@@ -60,11 +61,13 @@ export type Database = {
           match_id: string
           reported_by_id: string
           resolution: string | null
-          status: string
+          resolution_type: string | null
+          status: Database["public"]["Enums"]["dispute_status"] | null
           title: string
           updated_at: string | null
         }
         Insert: {
+          admin_notes?: string | null
           against_id: string
           created_at?: string | null
           description: string
@@ -72,11 +75,13 @@ export type Database = {
           match_id: string
           reported_by_id: string
           resolution?: string | null
-          status?: string
+          resolution_type?: string | null
+          status?: Database["public"]["Enums"]["dispute_status"] | null
           title: string
           updated_at?: string | null
         }
         Update: {
+          admin_notes?: string | null
           against_id?: string
           created_at?: string | null
           description?: string
@@ -84,7 +89,8 @@ export type Database = {
           match_id?: string
           reported_by_id?: string
           resolution?: string | null
-          status?: string
+          resolution_type?: string | null
+          status?: Database["public"]["Enums"]["dispute_status"] | null
           title?: string
           updated_at?: string | null
         }
@@ -483,6 +489,7 @@ export type Database = {
       }
     }
     Enums: {
+      dispute_status: "pending" | "under_review" | "resolved" | "rejected"
       match_status: "pending" | "in_progress" | "completed" | "cancelled"
     }
     CompositeTypes: {

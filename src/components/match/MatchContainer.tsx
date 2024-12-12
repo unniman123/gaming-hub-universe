@@ -14,6 +14,7 @@ interface MatchContainerProps {
     winner_id: string;
     player1_id: string;
     player2_id: string;
+    status: string;
     tournaments?: Tournament;
   };
   isParticipant: boolean;
@@ -46,6 +47,9 @@ const MatchContainer = ({ match, isParticipant, opponentId }: MatchContainerProp
           matchId={match.id}
           isParticipant={isParticipant}
           tournament={match.tournaments}
+          player1Id={match.player1_id}
+          player2Id={match.player2_id}
+          currentStatus={match.status}
         />
       </div>
     </div>
