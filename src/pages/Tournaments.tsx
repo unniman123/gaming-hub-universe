@@ -1,6 +1,7 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSessionContext } from '@supabase/auth-helpers-react';
+import { useNavigate } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
 import Navbar from '@/components/Navbar';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
@@ -12,6 +13,7 @@ import { format } from 'date-fns';
 const Tournaments = () => {
   const { session } = useSessionContext();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const { data: tournaments, isLoading: tournamentsLoading } = useQuery({
     queryKey: ['tournaments'],
@@ -25,6 +27,7 @@ const Tournaments = () => {
             status
           )
         `)
+        .eq('status', 'upcoming') // Only show upcoming tournaments
         .order('start_date', { ascending: true });
 
       if (error) throw error;
@@ -47,26 +50,41 @@ const Tournaments = () => {
   });
 
   const joinTournament = async (tournamentId: string) => {
-    const { error } = await supabase
-      .from('tournament_participants')
-      .insert({
-        tournament_id: tournamentId,
-        player_id: session?.user?.id,
+    try {
+      // Check if tournament is full
+      const tournament = tournaments?.find(t => t.id === tournamentId);
+      if (!tournament) {
+        throw new Error('Tournament not found');
+      }
+
+      if (getParticipantCount(tournament) >= tournament.max_participants) {
+        throw new Error('Tournament is full');
+      }
+
+      const { error } = await supabase
+        .from('tournament_participants')
+        .insert({
+          tournament_id: tournamentId,
+          player_id: session?.user?.id,
+          status: 'registered'
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "You have successfully joined the tournament!",
       });
 
-    if (error) {
+      // Navigate to tournament details page after joining
+      navigate(`/tournaments/${tournamentId}`);
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to join tournament. Please try again.",
+        description: error.message || "Failed to join tournament. Please try again.",
         variant: "destructive",
       });
-      return;
     }
-
-    toast({
-      title: "Success",
-      description: "You have successfully joined the tournament!",
-    });
   };
 
   if (tournamentsLoading) {
@@ -138,7 +156,7 @@ const Tournaments = () => {
                       <Button 
                         variant="secondary"
                         className="w-full"
-                        onClick={() => window.location.href = `/tournaments/${tournament.id}`}
+                        onClick={() => navigate(`/tournaments/${tournament.id}`)}
                       >
                         View Details
                         <ArrowRight className="ml-2 h-4 w-4" />
