@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { useSessionContext } from "@supabase/auth-helpers-react";
-import { Trophy, Swords, Target, Users } from "lucide-react";
+import { Swords, Target, Users } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -36,7 +36,7 @@ const StatsGrid = ({ userStats, statsLoading, matchesCount, matchesLoading }: St
       return data;
     },
     enabled: !!session?.user?.id,
-    refetchInterval: 5000, // Refresh every 5 seconds while in matchmaking
+    refetchInterval: 5000,
   });
 
   const handleMatchmakingClick = () => {
@@ -44,20 +44,7 @@ const StatsGrid = ({ userStats, statsLoading, matchesCount, matchesLoading }: St
   };
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Skill Rating</CardTitle>
-          <Trophy className="h-4 w-4 text-gaming-accent" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{statsLoading ? "..." : userStats?.skill_rating || 1000}</div>
-          <p className="text-xs text-muted-foreground">
-            Your current rating
-          </p>
-        </CardContent>
-      </Card>
-
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-8">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Total Matches</CardTitle>

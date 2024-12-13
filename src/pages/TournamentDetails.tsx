@@ -3,8 +3,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useSessionContext } from '@supabase/auth-helpers-react';
 import Navbar from '@/components/Navbar';
-import TournamentBracket from '@/components/tournament/TournamentBracket';
-import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Trophy, Users, Calendar, Loader2, Swords } from "lucide-react";
@@ -15,6 +13,13 @@ const TournamentDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { session } = useSessionContext();
+
+  // Redirect to login if no session
+  React.useEffect(() => {
+    if (!session) {
+      navigate('/login');
+    }
+  }, [session, navigate]);
 
   const { data: tournament, isLoading: tournamentLoading } = useQuery({
     queryKey: ['tournament', id],
@@ -45,12 +50,12 @@ const TournamentDetails = () => {
       if (error) throw error;
       return data;
     },
-    enabled: !!id,
+    enabled: !!id && !!session,
   });
 
-  const handleMatchClick = (matchId: string) => {
-    navigate(`/matches/${matchId}`);
-  };
+  if (!session) {
+    return null; // Will redirect in useEffect
+  }
 
   if (tournamentLoading) {
     return (
@@ -58,6 +63,17 @@ const TournamentDetails = () => {
         <Navbar />
         <div className="container mx-auto px-4 pt-24 flex justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-gaming-accent" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!tournament) {
+    return (
+      <div className="min-h-screen bg-gaming-dark">
+        <Navbar />
+        <div className="container mx-auto px-4 pt-24">
+          <h1 className="text-2xl text-white">Tournament not found</h1>
         </div>
       </div>
     );
@@ -119,94 +135,27 @@ const TournamentDetails = () => {
           </Card>
         </div>
 
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
-            <Trophy className="text-gaming-accent" />
-            Tournament Bracket
+        <div className="space-y-6">
+          <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+            <Users className="text-gaming-accent" />
+            Participants
           </h2>
-          {tournament && (
-            <TournamentBracket
-              tournamentId={tournament.id}
-              onMatchClick={handleMatchClick}
-            />
-          )}
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-              <Users className="text-gaming-accent" />
-              Participants
-            </h2>
-            <div className="bg-gaming-dark/50 rounded-lg border border-gaming-accent/20">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="text-gray-300">Player</TableHead>
-                    <TableHead className="text-gray-300">Rating</TableHead>
-                    <TableHead className="text-gray-300">Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {tournament?.tournament_participants?.map((participant: any) => (
-                    <TableRow key={participant.player_id}>
-                      <TableCell className="font-medium text-white">
-                        {participant.profiles.username}
-                      </TableCell>
-                      <TableCell className="text-gaming-accent">
-                        {participant.profiles.skill_rating}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className="text-gaming-accent border-gaming-accent">
+          <div className="bg-gaming-dark/50 rounded-lg border border-gaming-accent/20 p-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {tournament?.tournament_participants?.map((participant: any) => (
+                <Card key={participant.player_id} className="bg-gaming-dark/50 border-gaming-accent/20">
+                  <CardContent className="p-4">
+                    <div className="flex items-center space-x-4">
+                      <div className="flex-1">
+                        <p className="text-white font-medium">{participant.profiles.username}</p>
+                        <Badge variant="outline" className="mt-1">
                           {participant.status}
                         </Badge>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </div>
-
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-              <Swords className="text-gaming-accent" />
-              Matches
-            </h2>
-            <div className="bg-gaming-dark/50 rounded-lg border border-gaming-accent/20">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="text-gray-300">Players</TableHead>
-                    <TableHead className="text-gray-300">Score</TableHead>
-                    <TableHead className="text-gray-300">Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {tournament?.matches?.map((match: any) => (
-                    <TableRow key={match.id}>
-                      <TableCell className="font-medium text-white">
-                        {match.player1.username} vs {match.player2.username}
-                      </TableCell>
-                      <TableCell className="text-gaming-accent">
-                        {match.score_player1} - {match.score_player2}
-                      </TableCell>
-                      <TableCell>
-                        <Badge 
-                          variant="outline" 
-                          className={
-                            match.status === 'completed' 
-                              ? 'text-green-500 border-green-500'
-                              : 'text-gaming-accent border-gaming-accent'
-                          }
-                        >
-                          {match.status}
-                        </Badge>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           </div>
         </div>
