@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
 import { useSessionContext } from '@supabase/auth-helpers-react';
 import { useQuery } from '@tanstack/react-query';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Pencil, User } from "lucide-react";
+import ProfileAvatar from '@/components/profile/ProfileAvatar';
+import ProfileForm from '@/components/profile/ProfileForm';
+import ProfileActions from '@/components/profile/ProfileActions';
 
 const Profile = () => {
   const { session } = useSessionContext();
@@ -97,76 +96,31 @@ const Profile = () => {
       <Card className="max-w-2xl mx-auto p-6 bg-gaming-dark/50 border-gaming-accent/20">
         <div className="flex justify-between items-start mb-6">
           <h1 className="text-2xl font-bold text-white">Profile</h1>
-          {!isEditing && (
-            <Button variant="outline" onClick={() => setIsEditing(true)}>
-              <Pencil className="w-4 h-4 mr-2" />
-              Edit Profile
-            </Button>
-          )}
+          <ProfileActions
+            isEditing={isEditing}
+            onEdit={() => setIsEditing(true)}
+            onSave={handleSave}
+            onCancel={() => setIsEditing(false)}
+          />
         </div>
 
         <div className="space-y-6">
           <div className="flex items-center space-x-4">
-            <div className="relative">
-              <Avatar className="w-24 h-24">
-                <AvatarImage src={profile.avatar_url} />
-                <AvatarFallback>
-                  <User className="w-12 h-12" />
-                </AvatarFallback>
-              </Avatar>
-              {isEditing && (
-                <Input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleAvatarChange}
-                  className="absolute inset-0 opacity-0 cursor-pointer"
-                />
-              )}
-            </div>
-            <div>
-              {isEditing ? (
-                <Input
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className="mb-2"
-                  placeholder="Username"
-                />
-              ) : (
-                <h2 className="text-xl font-semibold text-white">{profile.username}</h2>
-              )}
+            <ProfileAvatar
+              avatarUrl={profile.avatar_url}
+              isEditing={isEditing}
+              onAvatarChange={handleAvatarChange}
+            />
+            <div className="flex-1">
+              <ProfileForm
+                username={username}
+                gameId={gameId}
+                isEditing={isEditing}
+                onUsernameChange={(e) => setUsername(e.target.value)}
+                onGameIdChange={(e) => setGameId(e.target.value)}
+              />
             </div>
           </div>
-
-          <div className="space-y-4">
-            <div>
-              <label className="text-sm text-gray-400">Game ID</label>
-              {isEditing ? (
-                <Input
-                  value={gameId}
-                  onChange={(e) => setGameId(e.target.value)}
-                  placeholder="Enter your game ID"
-                />
-              ) : (
-                <p className="text-white">{profile.game_id || 'Not set'}</p>
-              )}
-            </div>
-
-            {profile.skill_rating && (
-              <div>
-                <label className="text-sm text-gray-400">Skill Rating</label>
-                <p className="text-white">{profile.skill_rating}</p>
-              </div>
-            )}
-          </div>
-
-          {isEditing && (
-            <div className="flex space-x-4">
-              <Button onClick={handleSave}>Save Changes</Button>
-              <Button variant="outline" onClick={() => setIsEditing(false)}>
-                Cancel
-              </Button>
-            </div>
-          )}
         </div>
       </Card>
     </div>
