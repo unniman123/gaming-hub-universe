@@ -11,7 +11,8 @@ export const generateTournamentMatches = async (tournamentId: string) => {
         status,
         profiles!inner (
           skill_rating,
-          game_id
+          game_id,
+          username
         )
       `)
       .eq('tournament_id', tournamentId)
@@ -19,6 +20,13 @@ export const generateTournamentMatches = async (tournamentId: string) => {
 
     if (participantsError) throw participantsError;
     if (!participants) return;
+
+    // Get tournament details for time limits and rules
+    const { data: tournament } = await supabase
+      .from('tournaments')
+      .select('*')
+      .eq('id', tournamentId)
+      .single();
 
     // Sort participants by skill rating to match similar skilled players
     const sortedParticipants = participants.sort((a, b) => 
@@ -47,13 +55,21 @@ export const generateTournamentMatches = async (tournamentId: string) => {
 
         if (matchError) throw matchError;
 
-        // Create system message in match chat
+        // Create system message in match chat with player details and rules
         if (match) {
+          const systemMessage = `Match created!
+Player 1: ${player1.profiles?.username} (Game ID: ${player1.profiles?.game_id})
+Player 2: ${player2.profiles?.username} (Game ID: ${player2.profiles?.game_id})
+
+Time limit: ${tournament?.match_time_limit || '30 minutes'}
+Tournament rules: ${tournament?.tournament_rules || 'Standard tournament rules apply'}
+Dispute resolution: ${tournament?.dispute_resolution_rules || 'Contact tournament admin for disputes'}`;
+
           await supabase
             .from('match_chat')
             .insert({
               match_id: match.id,
-              message: `Match created! Player 1 Game ID: ${player1.profiles?.game_id}, Player 2 Game ID: ${player2.profiles?.game_id}`,
+              message: systemMessage,
               is_system_message: true
             });
         }
@@ -63,6 +79,9 @@ export const generateTournamentMatches = async (tournamentId: string) => {
           .from('tournament_participants')
           .update({ status: 'in_match' })
           .in('player_id', [player1.player_id, player2.player_id]);
+
+        // Notify players of their match
+        toast.success(`Match created! Check your active matches.`);
       }
     }
 

@@ -2,7 +2,6 @@ import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSessionContext } from '@supabase/auth-helpers-react';
 import { useNavigate } from 'react-router-dom';
-import { useToast } from "@/hooks/use-toast";
 import Navbar from '@/components/Navbar';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -28,7 +27,7 @@ const Tournaments = () => {
             status
           )
         `)
-        .eq('status', 'upcoming')
+        .in('status', ['upcoming', 'in_progress'])
         .order('start_date', { ascending: true });
 
       if (error) throw error;

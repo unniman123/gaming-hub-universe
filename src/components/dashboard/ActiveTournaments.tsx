@@ -9,6 +9,7 @@ interface Tournament {
   prize_pool: number;
   max_participants: number;
   tournament_participants: { count: number }[];
+  status: string;
 }
 
 interface ActiveTournamentsProps {
@@ -17,6 +18,11 @@ interface ActiveTournamentsProps {
 }
 
 const ActiveTournaments = ({ tournaments, isLoading }: ActiveTournamentsProps) => {
+  // Filter out any tournaments that aren't 'upcoming' or 'in_progress'
+  const activeTournaments = tournaments?.filter(
+    tournament => ['upcoming', 'in_progress'].includes(tournament.status)
+  );
+
   return (
     <div className="mb-8">
       <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
@@ -26,18 +32,18 @@ const ActiveTournaments = ({ tournaments, isLoading }: ActiveTournamentsProps) =
       
       {isLoading ? (
         <div className="text-center py-8 text-gray-400">Loading tournaments...</div>
-      ) : tournaments?.length === 0 ? (
+      ) : activeTournaments?.length === 0 ? (
         <div className="text-center py-8 text-gray-400">No active tournaments</div>
       ) : (
         <div className="space-y-4">
-          {tournaments?.map((tournament) => (
+          {activeTournaments?.map((tournament) => (
             <TournamentCard
               key={tournament.id}
               title={tournament.title}
               game={tournament.game_type}
               prizePool={Number(tournament.prize_pool) || 0}
               entryFee={0}
-              playersJoined={tournament.tournament_participants[0].count}
+              playersJoined={tournament.tournament_participants[0]?.count || 0}
               maxPlayers={tournament.max_participants}
             />
           ))}
