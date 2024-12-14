@@ -1,5 +1,6 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
@@ -8,6 +9,7 @@ import BracketMatch from './BracketMatch';
 interface Player {
   id: string;
   username: string;
+  game_id: string;
 }
 
 interface Match {
@@ -37,8 +39,8 @@ const TournamentBracket: React.FC<TournamentBracketProps> = ({ tournamentId, onM
           score_player1,
           score_player2,
           winner_id,
-          player1:profiles!matches_player1_id_fkey(id, username),
-          player2:profiles!matches_player2_id_fkey(id, username)
+          player1:profiles!matches_player1_id_fkey(id, username, game_id),
+          player2:profiles!matches_player2_id_fkey(id, username, game_id)
         `)
         .eq('tournament_id', tournamentId)
         .order('round', { ascending: true });
@@ -73,17 +75,28 @@ const TournamentBracket: React.FC<TournamentBracketProps> = ({ tournamentId, onM
             </h3>
             <div className="space-y-8">
               {matches.map((match) => (
-                <BracketMatch
+                <Card 
                   key={match.id}
-                  player1={match.player1?.username || 'TBD'}
-                  player2={match.player2?.username || 'TBD'}
-                  score1={match.score_player1}
-                  score2={match.score_player2}
-                  winnerId={match.winner_id}
-                  player1Id={match.player1?.id}
-                  player2Id={match.player2?.id}
+                  className="p-4 cursor-pointer hover:bg-gaming-accent/10 transition-colors"
                   onClick={() => onMatchClick(match.id)}
-                />
+                >
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <p className="text-white">{match.player1?.username || 'TBD'}</p>
+                        <p className="text-sm text-gray-400">Game ID: {match.player1?.game_id || 'N/A'}</p>
+                      </div>
+                      <span className="text-gaming-accent">{match.score_player1 || '-'}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <p className="text-white">{match.player2?.username || 'TBD'}</p>
+                        <p className="text-sm text-gray-400">Game ID: {match.player2?.game_id || 'N/A'}</p>
+                      </div>
+                      <span className="text-gaming-accent">{match.score_player2 || '-'}</span>
+                    </div>
+                  </div>
+                </Card>
               ))}
             </div>
           </div>

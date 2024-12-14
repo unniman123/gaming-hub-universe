@@ -1,26 +1,38 @@
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export const generateTournamentMatches = async (tournamentId: string) => {
   try {
-    // Get all participants
-    const { data: participants } = await supabase
+    // Get all participants with their skill ratings
+    const { data: participants, error: participantsError } = await supabase
       .from('tournament_participants')
-      .select('player_id')
+      .select(`
+        player_id,
+        status,
+        profiles!inner (
+          skill_rating,
+          game_id
+        )
+      `)
       .eq('tournament_id', tournamentId)
       .eq('status', 'registered');
 
+    if (participantsError) throw participantsError;
     if (!participants) return;
 
-    // Shuffle participants randomly
-    const shuffledParticipants = participants.sort(() => Math.random() - 0.5);
+    // Sort participants by skill rating to match similar skilled players
+    const sortedParticipants = participants.sort((a, b) => 
+      (a.profiles?.skill_rating || 0) - (b.profiles?.skill_rating || 0)
+    );
     
-    // Create matches for round 1
-    for (let i = 0; i < shuffledParticipants.length - 1; i += 2) {
-      const player1 = shuffledParticipants[i];
-      const player2 = shuffledParticipants[i + 1];
+    // Create matches for pairs of players
+    for (let i = 0; i < sortedParticipants.length - 1; i += 2) {
+      const player1 = sortedParticipants[i];
+      const player2 = sortedParticipants[i + 1];
       
       if (player1 && player2) {
-        await supabase
+        // Create the match
+        const { data: match, error: matchError } = await supabase
           .from('matches')
           .insert({
             tournament_id: tournamentId,
@@ -29,14 +41,35 @@ export const generateTournamentMatches = async (tournamentId: string) => {
             round: 1,
             match_date: new Date().toISOString(),
             status: 'pending'
-          });
+          })
+          .select()
+          .single();
+
+        if (matchError) throw matchError;
+
+        // Create system message in match chat
+        if (match) {
+          await supabase
+            .from('match_chat')
+            .insert({
+              match_id: match.id,
+              message: `Match created! Player 1 Game ID: ${player1.profiles?.game_id}, Player 2 Game ID: ${player2.profiles?.game_id}`,
+              is_system_message: true
+            });
+        }
+
+        // Update participant status
+        await supabase
+          .from('tournament_participants')
+          .update({ status: 'in_match' })
+          .in('player_id', [player1.player_id, player2.player_id]);
       }
     }
 
     // Update tournament status
     await supabase
       .from('tournaments')
-      .update({ status: 'ongoing' })
+      .update({ status: 'in_progress' })
       .eq('id', tournamentId);
 
   } catch (error) {

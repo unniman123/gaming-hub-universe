@@ -1,5 +1,5 @@
 import React from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSessionContext } from '@supabase/auth-helpers-react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
@@ -9,11 +9,12 @@ import { Button } from "@/components/ui/button";
 import { Trophy, Users, Calendar, Loader2, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from 'date-fns';
+import { toast } from "sonner";
 
 const Tournaments = () => {
   const { session } = useSessionContext();
-  const { toast } = useToast();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const { data: tournaments, isLoading: tournamentsLoading } = useQuery({
     queryKey: ['tournaments'],
@@ -27,7 +28,7 @@ const Tournaments = () => {
             status
           )
         `)
-        .eq('status', 'upcoming') // Only show upcoming tournaments
+        .eq('status', 'upcoming')
         .order('start_date', { ascending: true });
 
       if (error) throw error;
@@ -49,9 +50,35 @@ const Tournaments = () => {
     enabled: !!session?.user?.id,
   });
 
+  const joinTournamentMutation = useMutation({
+    mutationFn: async (tournamentId: string) => {
+      const { data, error } = await supabase
+        .from('tournament_participants')
+        .insert({
+          tournament_id: tournamentId,
+          player_id: session?.user?.id,
+          status: 'registered'
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (_, tournamentId) => {
+      queryClient.invalidateQueries({ queryKey: ['tournaments'] });
+      queryClient.invalidateQueries({ queryKey: ['user-tournament-participations'] });
+      toast.success("Successfully joined tournament!");
+      navigate(`/tournaments/${tournamentId}`);
+    },
+    onError: (error) => {
+      toast.error("Failed to join tournament. Please try again.");
+      console.error(error);
+    }
+  });
+
   const joinTournament = async (tournamentId: string) => {
     try {
-      // Check if tournament is full
       const tournament = tournaments?.find(t => t.id === tournamentId);
       if (!tournament) {
         throw new Error('Tournament not found');
@@ -61,29 +88,9 @@ const Tournaments = () => {
         throw new Error('Tournament is full');
       }
 
-      const { error } = await supabase
-        .from('tournament_participants')
-        .insert({
-          tournament_id: tournamentId,
-          player_id: session?.user?.id,
-          status: 'registered'
-        });
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "You have successfully joined the tournament!",
-      });
-
-      // Navigate to tournament details page after joining
-      navigate(`/tournaments/${tournamentId}`);
+      await joinTournamentMutation.mutateAsync(tournamentId);
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to join tournament. Please try again.",
-        variant: "destructive",
-      });
+      toast.error(error.message || "Failed to join tournament");
     }
   };
 
