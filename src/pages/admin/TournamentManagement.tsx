@@ -1,6 +1,5 @@
 import React from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, Edit, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,7 +24,7 @@ import { supabase } from "@/integrations/supabase/client";
 import Navbar from '@/components/Navbar';
 
 const TournamentManagement = () => {
-  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = React.useState(false);
   const [formData, setFormData] = React.useState({
     title: '',
@@ -42,12 +41,35 @@ const TournamentManagement = () => {
       const { data, error } = await supabase
         .from('tournaments')
         .select('*, tournament_participants(count)')
+        .is('deleted_at', null) // Only fetch non-deleted tournaments
         .order('created_at', { ascending: false });
 
       if (error) throw error;
       return data;
     },
   });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('tournaments')
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('id', id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success('Tournament deleted successfully');
+      queryClient.invalidateQueries({ queryKey: ['admin-tournaments'] });
+    },
+    onError: () => {
+      toast.error('Error deleting tournament');
+    },
+  });
+
+  const handleDeleteTournament = async (id: string) => {
+    deleteMutation.mutate(id);
+  };
 
   const handleCreateTournament = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,22 +98,6 @@ const TournamentManagement = () => {
       });
     } catch (error) {
       toast.error('Error creating tournament');
-    }
-  };
-
-  const handleDeleteTournament = async (id: string) => {
-    try {
-      const { error } = await supabase
-        .from('tournaments')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-
-      toast.success('Tournament deleted successfully');
-      refetch();
-    } catch (error) {
-      toast.error('Error deleting tournament');
     }
   };
 
@@ -195,7 +201,7 @@ const TournamentManagement = () => {
                   <TableCell className="text-white">{tournament.title}</TableCell>
                   <TableCell className="text-gray-300">{tournament.game_type}</TableCell>
                   <TableCell className="text-gray-300">
-                    {tournament.tournament_participants[0].count}/{tournament.max_participants}
+                    {tournament.tournament_participants[0]?.count}/{tournament.max_participants}
                   </TableCell>
                   <TableCell className="text-gaming-accent">
                     ${tournament.prize_pool}
