@@ -22,6 +22,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from '@/components/Navbar';
+import { Tournament } from '@/types/tournament.types';
 
 const TournamentManagement = () => {
   const queryClient = useQueryClient();

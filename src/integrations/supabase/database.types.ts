@@ -1,3 +1,7 @@
+import { Match } from '@/types/match.types';
+import { Profile } from '@/types/profile.types';
+import { Tournament, TournamentInsert, TournamentUpdate } from '@/types/tournament.types';
+
 export type Json =
   | string
   | number
@@ -6,9 +10,24 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
-export type Database = {
+export interface Database {
   public: {
     Tables: {
+      tournaments: {
+        Row: Tournament;
+        Insert: TournamentInsert;
+        Update: TournamentUpdate;
+      };
+      profiles: {
+        Row: Profile;
+        Insert: Omit<Profile, 'created_at' | 'updated_at'>;
+        Update: Partial<Profile>;
+      };
+      matches: {
+        Row: Match;
+        Insert: Omit<Match, 'id' | 'created_at' | 'updated_at'>;
+        Update: Partial<Match>;
+      };
       direct_messages: {
         Row: {
           created_at: string | null
@@ -72,7 +91,7 @@ export type Database = {
           match_id: string
           reported_by_id: string
           resolution?: string | null
-          status?: string
+          status: string
           title: string
           updated_at?: string | null
         }
@@ -109,7 +128,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       dispute_messages: {
@@ -148,7 +167,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       match_chat: {
@@ -190,7 +209,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       matches: {
@@ -264,7 +283,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       profiles: {
@@ -301,7 +320,7 @@ export type Database = {
           created_at?: string
           game_id?: string | null
           gaming_experience?: string | null
-          id?: string
+          id: string
           is_admin?: boolean | null
           is_in_matchmaking?: boolean | null
           is_online?: boolean | null
@@ -332,7 +351,7 @@ export type Database = {
           player_id?: string
           registration_date?: string
           status?: string | null
-          tournament_id?: string
+          tournament_id: string
         }
         Relationships: [
           {
@@ -348,95 +367,25 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "tournaments"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
-      tournaments: {
-        Row: {
-          created_at: string
-          creator_id: string
-          description: string | null
-          dispute_resolution_rules: string | null
-          end_date: string | null
-          game_type: string
-          id: string
-          match_time_limit: unknown | null
-          max_participants: number
-          prize_pool: number | null
-          start_date: string
-          status: string | null
-          title: string
-          tournament_rules: string | null
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          creator_id: string
-          description?: string | null
-          dispute_resolution_rules?: string | null
-          end_date?: string | null
-          game_type: string
-          id?: string
-          match_time_limit?: unknown | null
-          max_participants: number
-          prize_pool?: number | null
-          start_date: string
-          status?: string | null
-          title: string
-          tournament_rules?: string | null
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          creator_id?: string
-          description?: string | null
-          dispute_resolution_rules?: string | null
-          end_date?: string | null
-          game_type?: string
-          id?: string
-          match_time_limit?: unknown | null
-          max_participants?: number
-          prize_pool?: number | null
-          start_date?: string
-          status?: string | null
-          title?: string
-          tournament_rules?: string | null
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "tournaments_creator_id_fkey"
-            columns: ["creator_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-    }
+    };
     Views: {
-      [_ in never]: never
-    }
+      [_ in never]: never;
+    };
     Functions: {
       create_match: {
-        Args: {
-          player1_id: string
-          player2_id: string
-        }
-        Returns: string
-      }
+        Args: { player1_id: string; player2_id: string };
+        Returns: string;
+      };
       find_match: {
-        Args: {
-          player_id: string
-        }
-        Returns: string
-      }
-    }
+        Args: { player_id: string };
+        Returns: string;
+      };
+    };
     Enums: {
-      match_status: "pending" | "in_progress" | "completed" | "cancelled"
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
+      match_status: "pending" | "in_progress" | "completed" | "cancelled";
+    };
+  };
 }
