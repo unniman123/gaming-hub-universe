@@ -71,12 +71,14 @@ const GlobalChat = () => {
     channel
       .on('presence', { event: 'sync' }, () => {
         const newState = channel.presenceState();
-        setOnlineUsers(Object.values(newState));
+        const presenceUsers = Object.values(newState).flat();
+        setOnlineUsers(presenceUsers);
       })
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED' && session?.user?.id) {
           await channel.track({
-            user_id: session.user.id,
+            id: session.user.id,
+            username: session.user.email,
             online_at: new Date().toISOString(),
           });
         }
@@ -104,6 +106,11 @@ const GlobalChat = () => {
       console.error('Error sending message:', error);
       toast.error('Failed to send message');
     }
+  };
+
+  const handleSelectUser = (userId: string) => {
+    setSelectedUser(userId);
+    setSearchQuery('');
   };
 
   return (
@@ -136,7 +143,7 @@ const GlobalChat = () => {
           ) : (
             <ChatUserList
               users={onlineUsers}
-              onSelectUser={setSelectedUser}
+              onSelectUser={handleSelectUser}
               searchQuery={searchQuery}
               onSearchChange={setSearchQuery}
             />
