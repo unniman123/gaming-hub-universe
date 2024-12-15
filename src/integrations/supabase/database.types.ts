@@ -1,8 +1,7 @@
-import { Match, MatchInsert, MatchUpdate } from '@/types/database/match.types';
-import { Profile, ProfileInsert, ProfileUpdate } from '@/types/database/profile.types';
-import { Tournament, TournamentInsert, TournamentUpdate } from '@/types/database/tournament.types';
+import { Database as DatabaseGenerated } from './types';
+import { DisputeStatus, MatchStatus } from '@/types/enums';
 
-export interface Database {
+export interface Database extends Omit<DatabaseGenerated, 'public'> {
   public: {
     Tables: {
       profiles: {
@@ -104,110 +103,48 @@ export interface Database {
       }
       dispute_cases: {
         Row: {
-          admin_notes: string | null
-          against_id: string
-          created_at: string | null
-          description: string
-          id: string
-          match_id: string
-          reported_by_id: string
-          resolution: string | null
-          resolution_type: string | null
-          status: Database["public"]["Enums"]["dispute_status"] | null
-          title: string
-          updated_at: string | null
-        }
+          id: string;
+          match_id: string;
+          reported_by_id: string;
+          against_id: string;
+          title: string;
+          description: string;
+          resolution: string | null;
+          created_at: string | null;
+          updated_at: string | null;
+          status: DisputeStatus | null;
+          resolution_type: string | null;
+          admin_notes: string | null;
+        };
         Insert: {
-          admin_notes?: string | null
-          against_id: string
-          created_at?: string | null
-          description: string
-          id?: string
-          match_id: string
-          reported_by_id: string
-          resolution?: string | null
-          resolution_type?: string | null
-          status?: Database["public"]["Enums"]["dispute_status"] | null
-          title: string
-          updated_at?: string | null
-        }
+          id?: string;
+          match_id: string;
+          reported_by_id: string;
+          against_id: string;
+          title: string;
+          description: string;
+          resolution?: string | null;
+          created_at?: string | null;
+          updated_at?: string | null;
+          status?: DisputeStatus | null;
+          resolution_type?: string | null;
+          admin_notes?: string | null;
+        };
         Update: {
-          admin_notes?: string | null
-          against_id?: string
-          created_at?: string | null
-          description?: string
-          id?: string
-          match_id?: string
-          reported_by_id?: string
-          resolution?: string | null
-          resolution_type?: string | null
-          status?: Database["public"]["Enums"]["dispute_status"] | null
-          title?: string
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "dispute_cases_against_id_fkey"
-            columns: ["against_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "dispute_cases_match_id_fkey"
-            columns: ["match_id"]
-            isOneToOne: false
-            referencedRelation: "matches"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "dispute_cases_reported_by_id_fkey"
-            columns: ["reported_by_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
-      dispute_messages: {
-        Row: {
-          created_at: string | null
-          dispute_id: string
-          id: string
-          message: string
-          sender_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          dispute_id: string
-          id?: string
-          message: string
-          sender_id: string
-        }
-        Update: {
-          created_at?: string | null
-          dispute_id?: string
-          id?: string
-          message?: string
-          sender_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "dispute_messages_dispute_id_fkey"
-            columns: ["dispute_id"]
-            isOneToOne: false
-            referencedRelation: "dispute_cases"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "dispute_messages_sender_id_fkey"
-            columns: ["sender_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
+          id?: string;
+          match_id?: string;
+          reported_by_id?: string;
+          against_id?: string;
+          title?: string;
+          description?: string;
+          resolution?: string | null;
+          created_at?: string | null;
+          updated_at?: string | null;
+          status?: DisputeStatus | null;
+          resolution_type?: string | null;
+          admin_notes?: string | null;
+        };
+      };
       match_chat: {
         Row: {
           created_at: string | null
@@ -290,8 +227,9 @@ export interface Database {
         ]
       }
     };
-    Views: {
-      [_ in never]: never;
+    Enums: {
+      dispute_status: DisputeStatus;
+      match_status: MatchStatus;
     };
     Functions: {
       create_match: {
@@ -303,8 +241,8 @@ export interface Database {
         Returns: string;
       };
     };
-    Enums: {
-      match_status: "pending" | "in_progress" | "completed" | "cancelled";
+    Views: {
+      [_ in never]: never;
     };
   };
 }
