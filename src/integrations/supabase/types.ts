@@ -408,6 +408,7 @@ export type Database = {
         Row: {
           created_at: string
           creator_id: string
+          deleted_at: string | null
           description: string | null
           dispute_resolution_rules: string | null
           end_date: string | null
@@ -426,6 +427,7 @@ export type Database = {
         Insert: {
           created_at?: string
           creator_id: string
+          deleted_at?: string | null
           description?: string | null
           dispute_resolution_rules?: string | null
           end_date?: string | null
@@ -444,6 +446,7 @@ export type Database = {
         Update: {
           created_at?: string
           creator_id?: string
+          deleted_at?: string | null
           description?: string | null
           dispute_resolution_rules?: string | null
           end_date?: string | null

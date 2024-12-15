@@ -1,32 +1,64 @@
-import { Match } from '@/types/match.types';
-import { Profile } from '@/types/profile.types';
-import { Tournament, TournamentInsert, TournamentUpdate } from '@/types/tournament.types';
-
-export type Json =
-  | string
-  | number
-  | boolean
-  | null
-  | { [key: string]: Json | undefined }
-  | Json[]
+import { Match, MatchInsert, MatchUpdate } from '@/types/database/match.types';
+import { Profile, ProfileInsert, ProfileUpdate } from '@/types/database/profile.types';
+import { Tournament, TournamentInsert, TournamentUpdate } from '@/types/database/tournament.types';
 
 export interface Database {
   public: {
     Tables: {
+      profiles: {
+        Row: Profile;
+        Insert: ProfileInsert;
+        Update: ProfileUpdate;
+        Relationships: [];
+      };
+      matches: {
+        Row: Match;
+        Insert: MatchInsert;
+        Update: MatchUpdate;
+        Relationships: [
+          {
+            foreignKeyName: "matches_player1_id_fkey"
+            columns: ["player1_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matches_player2_id_fkey"
+            columns: ["player2_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matches_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matches_winner_id_fkey"
+            columns: ["winner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ];
+      };
       tournaments: {
         Row: Tournament;
         Insert: TournamentInsert;
         Update: TournamentUpdate;
-      };
-      profiles: {
-        Row: Profile;
-        Insert: Omit<Profile, 'created_at' | 'updated_at'>;
-        Update: Partial<Profile>;
-      };
-      matches: {
-        Row: Match;
-        Insert: Omit<Match, 'id' | 'created_at' | 'updated_at'>;
-        Update: Partial<Match>;
+        Relationships: [
+          {
+            foreignKeyName: "tournaments_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ];
       };
       direct_messages: {
         Row: {
@@ -72,6 +104,7 @@ export interface Database {
       }
       dispute_cases: {
         Row: {
+          admin_notes: string | null
           against_id: string
           created_at: string | null
           description: string
@@ -79,11 +112,13 @@ export interface Database {
           match_id: string
           reported_by_id: string
           resolution: string | null
-          status: string
+          resolution_type: string | null
+          status: Database["public"]["Enums"]["dispute_status"] | null
           title: string
           updated_at: string | null
         }
         Insert: {
+          admin_notes?: string | null
           against_id: string
           created_at?: string | null
           description: string
@@ -91,11 +126,13 @@ export interface Database {
           match_id: string
           reported_by_id: string
           resolution?: string | null
-          status: string
+          resolution_type?: string | null
+          status?: Database["public"]["Enums"]["dispute_status"] | null
           title: string
           updated_at?: string | null
         }
         Update: {
+          admin_notes?: string | null
           against_id?: string
           created_at?: string | null
           description?: string
@@ -103,7 +140,8 @@ export interface Database {
           match_id?: string
           reported_by_id?: string
           resolution?: string | null
-          status?: string
+          resolution_type?: string | null
+          status?: Database["public"]["Enums"]["dispute_status"] | null
           title?: string
           updated_at?: string | null
         }
@@ -211,125 +249,6 @@ export interface Database {
             referencedColumns: ["id"]
           }
         ]
-      }
-      matches: {
-        Row: {
-          created_at: string
-          game_mode: string | null
-          id: string
-          match_date: string
-          player1_id: string
-          player2_id: string
-          score_player1: number | null
-          score_player2: number | null
-          status: Database["public"]["Enums"]["match_status"] | null
-          tournament_id: string | null
-          updated_at: string
-          winner_id: string | null
-        }
-        Insert: {
-          created_at?: string
-          game_mode?: string | null
-          id?: string
-          match_date: string
-          player1_id: string
-          player2_id: string
-          score_player1?: number | null
-          score_player2?: number | null
-          status?: Database["public"]["Enums"]["match_status"] | null
-          tournament_id?: string | null
-          updated_at?: string
-          winner_id?: string | null
-        }
-        Update: {
-          created_at?: string
-          game_mode?: string | null
-          id?: string
-          match_date?: string
-          player1_id?: string
-          player2_id?: string
-          score_player1?: number | null
-          score_player2?: number | null
-          status?: Database["public"]["Enums"]["match_status"] | null
-          tournament_id?: string | null
-          updated_at?: string
-          winner_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "matches_player1_id_fkey"
-            columns: ["player1_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "matches_player2_id_fkey"
-            columns: ["player2_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "matches_tournament_id_fkey"
-            columns: ["tournament_id"]
-            isOneToOne: false
-            referencedRelation: "tournaments"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "matches_winner_id_fkey"
-            columns: ["winner_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
-      profiles: {
-        Row: {
-          avatar_url: string | null
-          created_at: string
-          game_id: string | null
-          gaming_experience: string | null
-          id: string
-          is_admin: boolean | null
-          is_in_matchmaking: boolean | null
-          is_online: boolean | null
-          last_seen: string | null
-          skill_rating: number | null
-          updated_at: string
-          username: string
-        }
-        Insert: {
-          avatar_url?: string | null
-          created_at?: string
-          game_id?: string | null
-          gaming_experience?: string | null
-          id: string
-          is_admin?: boolean | null
-          is_in_matchmaking?: boolean | null
-          is_online?: boolean | null
-          last_seen?: string | null
-          skill_rating?: number | null
-          updated_at?: string
-          username: string
-        }
-        Update: {
-          avatar_url?: string | null
-          created_at?: string
-          game_id?: string | null
-          gaming_experience?: string | null
-          id: string
-          is_admin?: boolean | null
-          is_in_matchmaking?: boolean | null
-          is_online?: boolean | null
-          last_seen?: string | null
-          skill_rating?: number | null
-          updated_at?: string
-          username?: string
-        }
-        Relationships: []
       }
       tournament_participants: {
         Row: {

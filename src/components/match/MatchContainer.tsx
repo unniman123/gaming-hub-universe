@@ -2,13 +2,14 @@ import React from 'react';
 import MatchInfo from './MatchInfo';
 import MatchCommunication from './MatchCommunication';
 import MatchSidebar from './MatchSidebar';
-import { Profile, Tournament } from '@/types/database';
+import { Profile } from '@/types/database/profile.types';
+import { Tournament } from '@/types/database/tournament.types';
 
 interface MatchContainerProps {
   match: {
     id: string;
-    player1: Profile;
-    player2: Profile;
+    player1: Pick<Profile, 'username' | 'skill_rating'>;
+    player2: Pick<Profile, 'username' | 'skill_rating'>;
     score_player1: number;
     score_player2: number;
     winner_id: string;

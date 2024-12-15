@@ -1,16 +1,11 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { User, Trophy } from "lucide-react";
+import { Profile } from '@/types/database/profile.types';
 
 interface MatchInfoProps {
-  player1: {
-    username: string;
-    skill_rating: number;
-  };
-  player2: {
-    username: string;
-    skill_rating: number;
-  };
+  player1: Pick<Profile, 'username' | 'skill_rating'>;
+  player2: Pick<Profile, 'username' | 'skill_rating'>;
   score1: number | null;
   score2: number | null;
   winnerId: string | null;
