@@ -1,5 +1,8 @@
 import { Database as DatabaseGenerated } from './types';
 import { DisputeStatus, MatchStatus } from '@/types/enums';
+import { Profile, ProfileInsert, ProfileUpdate } from '@/types/database/profile.types';
+import { Match, MatchInsert, MatchUpdate } from '@/types/database/match.types';
+import { Tournament, TournamentInsert, TournamentUpdate } from '@/types/database/tournament.types';
 
 export interface Database extends Omit<DatabaseGenerated, 'public'> {
   public: {
