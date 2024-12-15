@@ -32,7 +32,11 @@ const ChatUserList = ({ users, onSelectUser, searchQuery, onSearchChange }: Chat
           .ilike('username', `%${searchQuery}%`)
           .limit(10);
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error searching users:', error);
+          throw error;
+        }
+        
         setSearchResults(data || []);
       } catch (error) {
         console.error('Error searching users:', error);

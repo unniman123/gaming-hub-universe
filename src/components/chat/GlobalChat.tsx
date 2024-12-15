@@ -17,6 +17,7 @@ const GlobalChat = () => {
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Fetch messages when a user is selected
   useEffect(() => {
     if (!session?.user?.id || !selectedUser) return;
 
@@ -29,6 +30,7 @@ const GlobalChat = () => {
 
       if (error) {
         console.error('Error fetching messages:', error);
+        toast.error('Failed to load messages');
         return;
       }
 
@@ -37,6 +39,7 @@ const GlobalChat = () => {
 
     fetchMessages();
 
+    // Subscribe to new messages
     const channel = supabase
       .channel(`direct_messages:${session.user.id}`)
       .on(
@@ -48,6 +51,7 @@ const GlobalChat = () => {
           filter: `receiver_id=eq.${session.user.id}`,
         },
         (payload) => {
+          console.log('New message received:', payload);
           setMessages((prev) => [...prev, payload.new]);
           toast.info('New message received!');
         }
@@ -59,11 +63,14 @@ const GlobalChat = () => {
     };
   }, [session?.user?.id, selectedUser]);
 
+  // Handle online users presence
   useEffect(() => {
+    if (!session?.user?.id) return;
+
     const channel = supabase.channel('online_users', {
       config: {
         presence: {
-          key: session?.user?.id,
+          key: session.user.id,
         },
       },
     });
@@ -72,6 +79,7 @@ const GlobalChat = () => {
       .on('presence', { event: 'sync' }, () => {
         const newState = channel.presenceState();
         const presenceUsers = Object.values(newState).flat();
+        console.log('Online users:', presenceUsers);
         setOnlineUsers(presenceUsers);
       })
       .subscribe(async (status) => {
@@ -94,13 +102,22 @@ const GlobalChat = () => {
     if (!newMessage.trim() || !selectedUser) return;
 
     try {
-      const { error } = await supabase.from('direct_messages').insert({
+      const messageData = {
         sender_id: session?.user?.id,
         receiver_id: selectedUser,
         message: newMessage.trim(),
-      });
+      };
+
+      const { error, data } = await supabase
+        .from('direct_messages')
+        .insert(messageData)
+        .select('*, profiles(username, avatar_url)')
+        .single();
 
       if (error) throw error;
+
+      console.log('Message sent:', data);
+      setMessages((prev) => [...prev, data]);
       setNewMessage('');
     } catch (error) {
       console.error('Error sending message:', error);

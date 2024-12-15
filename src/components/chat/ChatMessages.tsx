@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -19,8 +19,16 @@ interface ChatMessagesProps {
 }
 
 const ChatMessages = ({ messages, currentUserId }: ChatMessagesProps) => {
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages]);
+
   return (
-    <ScrollArea className="flex-1 p-4">
+    <ScrollArea className="flex-1 p-4" ref={scrollRef}>
       <div className="space-y-4">
         {messages.map((message) => (
           <div
@@ -33,7 +41,9 @@ const ChatMessages = ({ messages, currentUserId }: ChatMessagesProps) => {
               {message.sender_id !== currentUserId && (
                 <Avatar className="h-6 w-6">
                   <AvatarImage src={message.profiles?.avatar_url} />
-                  <AvatarFallback>U</AvatarFallback>
+                  <AvatarFallback>
+                    {message.profiles?.username?.charAt(0).toUpperCase() || 'U'}
+                  </AvatarFallback>
                 </Avatar>
               )}
               <div
