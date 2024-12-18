@@ -3,16 +3,22 @@ import { useSession } from '@supabase/auth-helpers-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from "sonner";
 import { Users, Loader, UserRound, X, Swords } from "lucide-react";
-import Navbar from '@/components/Navbar';
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { supabase } from "@/integrations/supabase/client";
+import Navbar from '../components/Navbar';
+import { Button } from '../components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
+import { supabase } from '../integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
+
+interface Match {
+  id: string;
+}
 
 const Matchmaking = () => {
   const session = useSession();
   const queryClient = useQueryClient();
   const [isSearching, setIsSearching] = useState(false);
   const userId = session?.user?.id;
+  const navigate = useNavigate();
 
   // Get current user's profile and matchmaking status
   const { data: profile, isLoading: profileLoading } = useQuery({
@@ -58,17 +64,17 @@ const Matchmaking = () => {
       if (error) throw error;
 
       if (matchedPlayerId) {
-        const { data: match, error: matchError } = await supabase
+        const { data: matchData, error: matchError } = await supabase
           .rpc('create_match', { 
             player1_id: userId, 
             player2_id: matchedPlayerId 
-          });
+          }) as { data: Match, error: any };
 
         if (matchError) throw matchError;
 
         toast.success("Match found! Game starting soon...");
         setIsSearching(false);
-        // Redirect to match page or show match details
+        navigate(`/matches/${matchData.id}`);
       }
     } catch (error) {
       console.error('Error finding match:', error);

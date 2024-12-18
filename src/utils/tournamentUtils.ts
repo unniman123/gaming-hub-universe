@@ -1,5 +1,14 @@
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "../integrations/supabase/client";
 import { toast } from "sonner";
+
+// Function to shuffle an array randomly
+function shuffleArray(array: any[]) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
 
 export const generateTournamentMatches = async (tournamentId: string) => {
   try {
@@ -28,15 +37,13 @@ export const generateTournamentMatches = async (tournamentId: string) => {
       .eq('id', tournamentId)
       .single();
 
-    // Sort participants by skill rating to match similar skilled players
-    const sortedParticipants = participants.sort((a, b) => 
-      (a.profiles?.skill_rating || 0) - (b.profiles?.skill_rating || 0)
-    );
-    
+    // Shuffle participants randomly
+    const shuffledParticipants = shuffleArray(participants);
+
     // Create matches for pairs of players
-    for (let i = 0; i < sortedParticipants.length - 1; i += 2) {
-      const player1 = sortedParticipants[i];
-      const player2 = sortedParticipants[i + 1];
+    for (let i = 0; i < shuffledParticipants.length - 1; i += 2) {
+      const player1 = shuffledParticipants[i];
+      const player2 = shuffledParticipants[i + 1];
       
       if (player1 && player2) {
         // Create the match

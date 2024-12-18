@@ -1,21 +1,24 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useSessionContext } from '@supabase/auth-helpers-react';
-import Navbar from '@/components/Navbar';
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import Navbar from '../components/Navbar';
+import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
+import { Badge } from '../components/ui/badge';
 import { Trophy, Users, Calendar, Loader2, Swords } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from '../integrations/supabase/client';
 import { format } from 'date-fns';
-import TournamentBracket from '@/components/tournament/TournamentBracket';
+import TournamentBracket from '../components/tournament/TournamentBracket';
+import { generateTournamentMatches } from '../utils/tournamentUtils';
+import { Button } from '../components/ui/button';
+import { toast } from "sonner";
 
 const TournamentDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { session } = useSessionContext();
 
-  const { data: tournament, isLoading: tournamentLoading } = useQuery({
+  const { data: tournament, isLoading: tournamentLoading, refetch } = useQuery({
     queryKey: ['tournament', id],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -50,6 +53,25 @@ const TournamentDetails = () => {
   const handleMatchClick = (matchId: string) => {
     navigate(`/matches/${matchId}`);
   };
+
+  const handleStartTournament = async () => {
+    if (tournament) {
+      try {
+        await generateTournamentMatches(tournament.id);
+        toast.success("Tournament started and matches created!");
+        refetch();
+      } catch (error) {
+        console.error("Error starting tournament:", error);
+        toast.error("Failed to start tournament.");
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (tournament && tournament.status === 'upcoming' && tournament.tournament_participants?.length === tournament.max_participants) {
+      handleStartTournament();
+    }
+  }, [tournament]);
 
   if (!session) {
     navigate('/login');
@@ -144,6 +166,14 @@ const TournamentDetails = () => {
               tournamentId={tournament.id} 
               onMatchClick={handleMatchClick}
             />
+          </div>
+        )}
+
+        {tournament.status === 'upcoming' && tournament.tournament_participants?.length === tournament.max_participants && (
+          <div className="mb-8">
+            <Button onClick={handleStartTournament} className="bg-gaming-accent hover:bg-gaming-accent/80">
+              Start Tournament
+            </Button>
           </div>
         )}
 

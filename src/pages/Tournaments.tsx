@@ -2,11 +2,11 @@ import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSessionContext } from '@supabase/auth-helpers-react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '@/components/Navbar';
-import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
+import Navbar from '../components/Navbar';
+import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '../components/ui/table';
+import { Button } from '../components/ui/button';
 import { Trophy, Users, Calendar, Loader2, ArrowRight } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from '../integrations/supabase/client';
 import { format } from 'date-fns';
 import { toast } from "sonner";
 
@@ -28,6 +28,7 @@ const Tournaments = () => {
           )
         `)
         .in('status', ['upcoming', 'in_progress'])
+        .is('deleted_at', null) // Only fetch non-deleted tournaments
         .order('start_date', { ascending: true });
 
       if (error) throw error;

@@ -2,12 +2,12 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSessionContext } from '@supabase/auth-helpers-react';
 import { LayoutDashboard } from "lucide-react";
-import Navbar from '@/components/Navbar';
-import AdminSection from '@/components/AdminSection';
-import StatsGrid from '@/components/dashboard/StatsGrid';
-import ActiveTournaments from '@/components/dashboard/ActiveTournaments';
-import MatchHistory from '@/components/dashboard/MatchHistory';
-import { supabase } from "@/integrations/supabase/client";
+import Navbar from '../components/Navbar';
+import AdminSection from '../components/AdminSection';
+import StatsGrid from '../components/dashboard/StatsGrid';
+import ActiveTournaments from '../components/dashboard/ActiveTournaments';
+import MatchHistory from '../components/dashboard/MatchHistory';
+import { supabase } from '../integrations/supabase/client';
 
 const Index = () => {
   const { session } = useSessionContext();
@@ -58,6 +58,7 @@ const Index = () => {
           tournament_participants(count)
         `)
         .eq('status', 'upcoming')
+        .is('deleted_at', null) // Only fetch non-deleted tournaments
         .order('start_date', { ascending: true })
         .limit(3);
 
